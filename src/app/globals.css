@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 60 5% 96%;       /* #F5F5F0 */
+    --foreground: 0 0% 4%;         /* #0A0A0A */
+    --card: 0 0% 100%;             /* #FFFFFF */
+    --card-foreground: 0 0% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 4%;
+    --primary: 0 0% 4%;            /* #0A0A0A */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 100%;        /* #FFFFFF */
+    --secondary-foreground: 0 0% 4%;
+    --muted: 60 4% 91%;            /* #E8E8E3 */
+    --muted-foreground: 0 0% 36%;  /* #5C5C5C */
+    --accent: 73 100% 47%;         /* #C8F000 */
+    --accent-foreground: 0 0% 4%;
+    --destructive: 352 100% 41%;   /* #D4000F */
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 4%;             /* #0A0A0A */
+    --input: 0 0% 4%;
+    --ring: 0 0% 4%;
+    --radius: 0px;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-[#F5F5F0] text-[#0A0A0A];
+    font-family: var(--font-inter), "Helvetica Neue", Arial, sans-serif;
+  }
+
+  /* Remove all border-radius except for circular avatars */
+  *:not(.rounded-full) {
+    border-radius: 0 !important;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-playfair), Georgia, serif;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Mirror label style: uppercase + wide tracking */
+  .label-style {
+    @apply uppercase tracking-[0.08em] font-semibold;
+    font-family: var(--font-inter), sans-serif;
+  }
+
+  .label-sm-style {
+    @apply uppercase tracking-[0.1em] font-semibold;
+    font-family: var(--font-inter), sans-serif;
+    font-size: 11px;
+    line-height: 14px;
+  }
+}
