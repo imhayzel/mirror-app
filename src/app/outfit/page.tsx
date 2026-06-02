@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 
@@ -40,19 +41,20 @@ const SANS: React.CSSProperties = {
 
 export default function OutfitPage() {
   const router = useRouter();
+  const { userId } = useAuth();
   const [saving, setSaving] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleWearingThis = useCallback(async () => {
-    if (saving || confirmed) return;
+    if (saving || confirmed || !userId) return;
     setSaving(true);
     setError(null);
     try {
       const { error: sbError } = await supabase
         .from("outfit_suggestions")
         .insert({
-          user_id: "demo-user",
+          user_id: userId,
           items: PIECES.map((p) => p.name),
           reasoning: REASONING,
           worn: true,

@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
 import { addItem } from "@/lib/wardrobe";
 import BottomNav from "@/components/BottomNav";
 
@@ -60,6 +61,7 @@ const FIELD_INPUT: React.CSSProperties = {
 
 export default function AddPage() {
   const router = useRouter();
+  const { userId } = useAuth();
 
   // image state
   const [imageMode, setImageMode] = useState<"upload" | "url" | null>(null);
@@ -104,7 +106,7 @@ export default function AddPage() {
   }, []);
 
   const handleSave = useCallback(async () => {
-    if (!name.trim() || !type) return;
+    if (!name.trim() || !type || !userId) return;
     setSaving(true);
     setError(null);
     try {
@@ -113,7 +115,7 @@ export default function AddPage() {
         type,
         color: color.trim() || null,
         image_url: imageUrl,
-      });
+      }, userId);
       router.push("/closet");
     } catch {
       setError("Failed to save. Check your connection and try again.");
@@ -121,7 +123,7 @@ export default function AddPage() {
     }
   }, [name, type, color, imageUrl, router]);
 
-  const canSave = name.trim().length > 0 && type !== null && !saving;
+  const canSave = name.trim().length > 0 && type !== null && !saving && !!userId;
 
   return (
     <div style={{ minHeight: "100vh", background: "#0E0E0E", display: "flex", justifyContent: "center" }}>

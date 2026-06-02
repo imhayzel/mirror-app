@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 
@@ -229,6 +230,7 @@ function VibeSheet({
 
 export default function HomePage() {
   const router = useRouter();
+  const { userId } = useAuth();
   const dateKicker = formatDateKicker(new Date());
 
   // outfit confirm state
@@ -243,24 +245,25 @@ export default function HomePage() {
   const [lastOutfit, setLastOutfit] = useState<LastOutfit | null>(null);
 
   useEffect(() => {
+    if (!userId) return;
     supabase
       .from("outfit_suggestions")
       .select("id, items, created_at")
-      .eq("user_id", "demo-user")
+      .eq("user_id", userId)
       .eq("worn", true)
       .order("created_at", { ascending: false })
       .limit(1)
       .then(({ data }) => {
         if (data && data.length > 0) setLastOutfit(data[0] as LastOutfit);
       });
-  }, []);
+  }, [userId]);
 
   const handleWearingThis = useCallback(async () => {
-    if (saving || confirmed) return;
+    if (saving || confirmed || !userId) return;
     setSaving(true);
     try {
       await supabase.from("outfit_suggestions").insert({
-        user_id: "demo-user",
+        user_id: userId,
         items: OUTFIT_PIECES,
         reasoning: OUTFIT_REASONING,
         worn: true,

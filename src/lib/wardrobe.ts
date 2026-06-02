@@ -1,7 +1,5 @@
 import { supabase } from './supabase'
 
-const DEMO_USER = 'demo-user'
-
 export type WardrobeItem = {
   id: string
   user_id: string
@@ -15,7 +13,7 @@ export type WardrobeItem = {
 
 export type NewWardrobeItem = Pick<WardrobeItem, 'name' | 'type' | 'color' | 'image_url' | 'descriptors'>
 
-export async function getItems(userId = DEMO_USER): Promise<WardrobeItem[]> {
+export async function getItems(userId: string): Promise<WardrobeItem[]> {
   const { data, error } = await supabase
     .from('wardrobe_items')
     .select('*')
@@ -45,7 +43,7 @@ export async function getItem(id: string): Promise<WardrobeItem> {
 
 export async function addItem(
   item: Omit<NewWardrobeItem, 'descriptors'> & { descriptors?: string[] },
-  userId = DEMO_USER
+  userId: string
 ): Promise<WardrobeItem> {
   const { data, error } = await supabase
     .from('wardrobe_items')

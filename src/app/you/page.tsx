@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
 import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 
@@ -120,23 +121,25 @@ function OccasionRow({ label }: { label: string }) {
 // ─── YouPage ──────────────────────────────────────────────────────────────────
 
 export default function YouPage() {
+  const { userId } = useAuth();
   const [stats, setStats] = useState<Stats>({ pieces: 0, outfits: 0, confirmed: 0 });
 
   useEffect(() => {
+    if (!userId) return;
     async function fetchStats() {
       const [piecesRes, outfitsRes, confirmedRes] = await Promise.all([
         supabase
           .from("wardrobe_items")
           .select("id", { count: "exact", head: true })
-          .eq("user_id", "demo-user"),
+          .eq("user_id", userId),
         supabase
           .from("outfit_suggestions")
           .select("id", { count: "exact", head: true })
-          .eq("user_id", "demo-user"),
+          .eq("user_id", userId),
         supabase
           .from("outfit_suggestions")
           .select("id", { count: "exact", head: true })
-          .eq("user_id", "demo-user")
+          .eq("user_id", userId)
           .eq("worn", true),
       ]);
       setStats({
@@ -146,7 +149,7 @@ export default function YouPage() {
       });
     }
     fetchStats();
-  }, []);
+  }, [userId]);
 
   return (
     <div

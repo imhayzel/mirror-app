@@ -1,4 +1,18 @@
+"use client";
+
+import { useState, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+const MONO: React.CSSProperties = {
+  fontFamily: "var(--font-mono), 'SFMono-Regular', monospace",
+};
+const SERIF: React.CSSProperties = {
+  fontFamily: "var(--font-display), Georgia, serif",
+};
+const SANS: React.CSSProperties = {
+  fontFamily: "var(--font-sans), 'Helvetica Neue', Arial, sans-serif",
+};
 
 const steps = [
   {
@@ -33,7 +47,164 @@ const features = [
   },
 ];
 
+// ─── BetaGate ─────────────────────────────────────────────────────────────────
+
+function BetaGate({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
+  const [code, setCode] = useState("");
+  const [error, setError] = useState(false);
+  const [checking, setChecking] = useState(false);
+
+  const handleSubmit = useCallback(async () => {
+    if (!code.trim() || checking) return;
+    setChecking(true);
+    setError(false);
+    try {
+      const res = await fetch("/api/beta-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: code.trim() }),
+      });
+      const { valid } = await res.json();
+      if (valid) {
+        router.push("/sign-up");
+      } else {
+        setError(true);
+        setChecking(false);
+      }
+    } catch {
+      setError(true);
+      setChecking(false);
+    }
+  }, [code, checking, router]);
+
+  return (
+    <>
+      {/* scrim */}
+      <div
+        onClick={onClose}
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(14,14,14,0.6)",
+          zIndex: 100,
+        }}
+      />
+      {/* sheet */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "100%",
+          maxWidth: 480,
+          background: "#0E0E0E",
+          borderTop: "1px solid rgba(255,255,255,0.12)",
+          zIndex: 101,
+          padding: "0 32px 52px",
+        }}
+      >
+        {/* drag handle */}
+        <div style={{ display: "flex", justifyContent: "center", padding: "16px 0 28px" }}>
+          <div style={{ width: 32, height: 3, background: "rgba(255,255,255,0.18)" }} />
+        </div>
+
+        <p
+          style={{
+            ...SERIF,
+            fontSize: 28,
+            fontWeight: 500,
+            fontStyle: "italic",
+            lineHeight: 1.15,
+            letterSpacing: "-0.01em",
+            color: "#FFFFFF",
+            margin: "0 0 8px",
+          }}
+        >
+          Beta access.
+        </p>
+        <p
+          style={{
+            ...MONO,
+            fontSize: 10,
+            letterSpacing: "0.14em",
+            color: "rgba(255,255,255,0.38)",
+            textTransform: "uppercase",
+            margin: "0 0 32px",
+          }}
+        >
+          ENTER YOUR ACCESS CODE TO CONTINUE
+        </p>
+
+        <input
+          type="text"
+          autoFocus
+          placeholder="Access code"
+          value={code}
+          onChange={(e) => { setCode(e.target.value); setError(false); }}
+          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+          style={{
+            ...SANS,
+            width: "100%",
+            background: "transparent",
+            border: "none",
+            borderBottom: `1px solid ${error ? "#B23A33" : "rgba(255,255,255,0.2)"}`,
+            color: "#FFFFFF",
+            fontSize: 16,
+            padding: "0 0 14px",
+            outline: "none",
+            marginBottom: error ? 8 : 28,
+            boxSizing: "border-box",
+          }}
+        />
+
+        {error && (
+          <p
+            style={{
+              ...MONO,
+              fontSize: 9,
+              letterSpacing: "0.14em",
+              color: "#B23A33",
+              textTransform: "uppercase",
+              margin: "0 0 24px",
+            }}
+          >
+            THAT CODE ISN&apos;T RECOGNISED.
+          </p>
+        )}
+
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={!code.trim() || checking}
+          style={{
+            ...SANS,
+            width: "100%",
+            height: 52,
+            background: code.trim() && !checking ? "#FFFFFF" : "rgba(255,255,255,0.12)",
+            color: code.trim() && !checking ? "#0E0E0E" : "rgba(255,255,255,0.25)",
+            border: "none",
+            fontSize: 13,
+            fontWeight: 600,
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+            cursor: code.trim() && !checking ? "pointer" : "default",
+            transition: "background 0.18s cubic-bezier(0.22,1,0.36,1), color 0.18s",
+          }}
+        >
+          {checking ? "CHECKING…" : "CONTINUE →"}
+        </button>
+      </div>
+    </>
+  );
+}
+
+// ─── LandingPage ──────────────────────────────────────────────────────────────
+
 export default function LandingPage() {
+  const [gateOpen, setGateOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-[#F3F2EF] text-[#0E0E0E]">
 
@@ -56,17 +227,18 @@ export default function LandingPage() {
           <Link
             href="/sign-in"
             className="font-mono-label transition-colors duration-200 text-[#6B6B66] hover:text-[#0E0E0E]"
-            style={{ fontSize: "11px" }}
+            style={{ ...MONO, fontSize: "11px" }}
           >
             SIGN IN
           </Link>
-          <Link
-            href="/onboarding"
+          <button
+            type="button"
+            onClick={() => setGateOpen(true)}
             className="font-mono-label text-[#0E0E0E] hover:text-[#6B6B66] transition-colors duration-200"
-            style={{ fontSize: "11px" }}
+            style={{ ...MONO, fontSize: "11px", background: "none", border: "none", cursor: "pointer", padding: 0 }}
           >
             GET STARTED
-          </Link>
+          </button>
         </div>
       </nav>
 
@@ -78,7 +250,6 @@ export default function LandingPage() {
           minHeight: "calc(100vh - 56px)",
         }}
       >
-        {/* B&W placeholder — editorial fashion image stand-in */}
         <div
           className="absolute inset-0"
           style={{
@@ -86,7 +257,6 @@ export default function LandingPage() {
               "linear-gradient(155deg, #2c2c2c 0%, #1a1a1a 25%, #0f0f0f 55%, #050505 100%)",
           }}
         />
-        {/* Film grain overlay */}
         <div
           className="absolute inset-0"
           style={{
@@ -95,10 +265,8 @@ export default function LandingPage() {
             backgroundRepeat: "repeat",
           }}
         />
-        {/* Scrim */}
         <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.52)" }} />
 
-        {/* Content */}
         <div
           className="relative z-10 flex flex-col items-center text-center w-full px-5 py-20 md:py-32"
           style={{ maxWidth: "680px", margin: "0 auto" }}
@@ -125,11 +293,12 @@ export default function LandingPage() {
             YOUR AI WARDROBE. EVERY MORNING, A FINISHED LOOK.
           </p>
 
-          <Link
-            href="/onboarding"
+          <button
+            type="button"
+            onClick={() => setGateOpen(true)}
             className="landing-btn-white w-full md:w-auto flex items-center justify-center md:inline-flex"
             style={{
-              fontFamily: "var(--font-sans)",
+              ...SANS,
               fontWeight: 600,
               fontSize: "13px",
               textTransform: "uppercase",
@@ -137,12 +306,13 @@ export default function LandingPage() {
               height: "56px",
               paddingLeft: "40px",
               paddingRight: "40px",
-              textDecoration: "none",
+              cursor: "pointer",
+              border: "none",
               transition: "background 200ms",
             }}
           >
             GET STARTED →
-          </Link>
+          </button>
         </div>
       </section>
 
@@ -262,11 +432,12 @@ export default function LandingPage() {
             Your wardrobe, finally working for you.
           </h2>
 
-          <Link
-            href="/onboarding"
+          <button
+            type="button"
+            onClick={() => setGateOpen(true)}
             className="landing-btn-white w-full md:w-auto inline-flex items-center justify-center"
             style={{
-              fontFamily: "var(--font-sans)",
+              ...SANS,
               fontWeight: 600,
               fontSize: "13px",
               textTransform: "uppercase",
@@ -274,12 +445,13 @@ export default function LandingPage() {
               height: "56px",
               paddingLeft: "40px",
               paddingRight: "40px",
-              textDecoration: "none",
+              cursor: "pointer",
+              border: "none",
               transition: "background 200ms",
             }}
           >
             START FOR FREE →
-          </Link>
+          </button>
         </div>
       </section>
 
@@ -302,6 +474,10 @@ export default function LandingPage() {
           © 2026 MIRROR
         </span>
       </footer>
+
+      {/* ── Beta gate sheet ── */}
+      {gateOpen && <BetaGate onClose={() => setGateOpen(false)} />}
+
     </div>
   );
 }

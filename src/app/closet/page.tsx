@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import { getItems, deleteItem, WardrobeItem } from "@/lib/wardrobe";
 import BottomNav from "@/components/BottomNav";
 
@@ -262,16 +263,18 @@ function GarmentCard({
 // ─── ClosetPage ───────────────────────────────────────────────────────────────
 
 export default function ClosetPage() {
+  const { userId } = useAuth();
   const [items, setItems] = useState<WardrobeItem[]>([]);
   const [filter, setFilter] = useState<FilterKey>("ALL");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getItems()
+    if (!userId) return;
+    getItems(userId)
       .then(setItems)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [userId]);
 
   const handleDelete = useCallback(async (id: string) => {
     try {
