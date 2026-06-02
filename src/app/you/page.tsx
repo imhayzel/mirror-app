@@ -212,9 +212,8 @@ export default function YouPage() {
           <span
             style={{
               ...SERIF,
-              fontSize: 28,
+              fontSize: 24,
               fontWeight: 500,
-              fontStyle: "italic",
               letterSpacing: "-0.01em",
               color: "#0E0E0E",
               lineHeight: 1,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
 
 const HAIRLINE = "1px solid rgba(14,14,14,0.12)";
@@ -114,18 +115,24 @@ export default function SettingsPage() {
 
       {/* ── Top bar ── */}
       <header
-        className="sticky top-0 z-50 flex items-end px-5 md:px-10"
+        className="sticky top-0 z-50 flex items-center justify-between px-5 md:px-10"
         style={{
           background: "#F3F2EF",
           borderBottom: HAIRLINE,
-          height: "72px",
-          paddingBottom: "14px",
+          height: "56px",
         }}
       >
+        <Link
+          href="/you"
+          className="font-mono-label transition-colors duration-150 hover:text-[#0E0E0E]"
+          style={{ fontSize: "11px", color: "#6B6B66", textDecoration: "none" }}
+        >
+          ← YOU
+        </Link>
         <h1
           className="font-display"
           style={{
-            fontSize: "28px",
+            fontSize: "20px",
             fontWeight: 500,
             letterSpacing: "-0.01em",
             color: "#0E0E0E",
@@ -134,6 +141,7 @@ export default function SettingsPage() {
         >
           Settings.
         </h1>
+        <span style={{ width: "48px" }} />
       </header>
 
       {/* ── ACCOUNT ── */}
