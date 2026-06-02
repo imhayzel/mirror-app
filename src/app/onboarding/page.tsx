@@ -1,317 +1,285 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-const STYLE_OPTIONS = [
-  { id: "minimal", label: "MINIMAL", desc: "Clean lines, neutral palette, nothing unnecessary." },
-  { id: "classic", label: "CLASSIC", desc: "Timeless pieces, polished fits, enduring elegance." },
-  { id: "streetwear", label: "STREETWEAR", desc: "Bold graphics, relaxed silhouettes, cultural edge." },
-  { id: "avant-garde", label: "AVANT-GARDE", desc: "Experimental shapes, unexpected combinations." },
-  { id: "bohemian", label: "BOHEMIAN", desc: "Layered textures, earthy tones, free-spirited." },
-  { id: "preppy", label: "PREPPY", desc: "Collegiate references, clean colours, tailored." },
+// White-on-dark opacity palette
+const W60 = "rgba(255,255,255,0.60)";  // sublines, kickers
+const W40 = "rgba(255,255,255,0.40)";  // captions, bottom wordmark
+const W18 = "rgba(255,255,255,0.18)";  // hairline borders on dark
+
+const addOptions = [
+  {
+    label: "UPLOAD AN OOTD PHOTO →",
+    caption: "Mirror identifies every piece automatically",
+  },
+  {
+    label: "UPLOAD A SINGLE ITEM →",
+    caption: "One piece at a time",
+  },
+  {
+    label: "PASTE A PRODUCT LINK →",
+    caption: "From any online store",
+  },
 ];
 
-const OCCASION_OPTIONS = ["EVERYDAY", "WORK", "CASUAL", "EVENING", "ALL OF THE ABOVE"];
-
 export default function OnboardingPage() {
-  const [step, setStep] = useState(0);
-  const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
-  const [selectedOccasion, setSelectedOccasion] = useState<string>("");
-
-  const toggleStyle = (id: string) => {
-    setSelectedStyles((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
-  };
+  const [screen, setScreen] = useState(0);
+  const router = useRouter();
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#F3F2EF" }}>
+    <div
+      className="min-h-screen flex flex-col"
+      style={{ background: "#0E0E0E", color: "#FFFFFF" }}
+    >
+      {/* ─────────────────────────────────────────
+          SCREEN 1 — The Promise
+      ───────────────────────────────────────── */}
+      {screen === 0 && (
+        <div className="flex-1 flex flex-col justify-between px-5 py-12 md:px-10" style={{ minHeight: "100svh" }}>
+          {/* Spacer */}
+          <div />
 
-      {/* Nav */}
-      <header
-        className="flex items-center justify-between px-5 md:px-10"
-        style={{
-          height: "56px",
-          background: "#F3F2EF",
-          borderBottom: "1px solid rgba(14,14,14,0.12)",
-        }}
-      >
-        <span
-          className="font-display italic"
-          style={{ fontSize: "22px", fontWeight: 500, color: "#0E0E0E" }}
-        >
-          Mirror
-        </span>
-        <Link
-          href="/"
-          className="font-mono-label hover:text-[#0E0E0E] transition-colors duration-200"
-          style={{ fontSize: "11px", color: "#6B6B66" }}
-        >
-          EXIT
-        </Link>
-      </header>
-
-      <div
-        className="flex-1 w-full mx-auto px-5 md:px-10 py-12"
-        style={{ maxWidth: "600px" }}
-      >
-
-        {/* ── Step 0: Style ── */}
-        {step === 0 && (
-          <div>
-            {/* Progress */}
-            <p className="font-mono-label" style={{ fontSize: "11px", color: "#6B6B66", marginBottom: "32px" }}>
-              1 OF 2
-            </p>
-
+          {/* Centre content */}
+          <div className="flex flex-col items-center text-center">
             <h1
-              className="font-display"
+              className="font-display italic text-white text-balance"
               style={{
-                fontSize: "clamp(28px, 5vw, 40px)",
+                fontSize: "clamp(36px, 8vw, 72px)",
                 fontWeight: 500,
-                lineHeight: 1.08,
-                letterSpacing: "-0.01em",
-                color: "#0E0E0E",
-                marginBottom: "8px",
+                lineHeight: 1.0,
+                letterSpacing: "-0.015em",
+                marginBottom: "28px",
               }}
             >
-              What describes your style?
+              Your wardrobe,
+              <br />
+              finally working
+              <br />
+              for you.
             </h1>
-            <p style={{ fontSize: "14px", lineHeight: 1.6, color: "#6B6B66", marginBottom: "40px" }}>
-              Select all that apply. Mirror uses this to tailor your outfit suggestions.
+
+            <p
+              className="font-mono-label text-center"
+              style={{
+                fontSize: "11px",
+                color: W60,
+                lineHeight: 1.8,
+                marginBottom: "48px",
+                maxWidth: "280px",
+              }}
+            >
+              MIRROR LEARNS HOW YOU DRESS.
+              <br />
+              THE MORE YOU ADD, THE SMARTER IT GETS.
             </p>
 
-            {/* Option rows */}
-            <div style={{ borderTop: "1px solid rgba(14,14,14,0.12)" }}>
-              {STYLE_OPTIONS.map((opt) => {
-                const selected = selectedStyles.includes(opt.id);
-                return (
-                  <button
-                    key={opt.id}
-                    onClick={() => toggleStyle(opt.id)}
-                    className="w-full text-left transition-colors duration-150"
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      justifyContent: "space-between",
-                      padding: "20px 0",
-                      borderBottom: "1px solid rgba(14,14,14,0.12)",
-                      background: "transparent",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <div>
-                      <p
-                        className="font-mono-label"
-                        style={{
-                          fontSize: "12px",
-                          color: selected ? "#0E0E0E" : "#0E0E0E",
-                          marginBottom: "4px",
-                        }}
-                      >
-                        {opt.label}
-                      </p>
-                      <p style={{ fontSize: "13px", lineHeight: 1.5, color: "#6B6B66" }}>
-                        {opt.desc}
-                      </p>
-                    </div>
-                    {/* Selection indicator */}
-                    <span
-                      className="font-mono-label shrink-0"
-                      style={{
-                        fontSize: "11px",
-                        color: selected ? "#0E0E0E" : "transparent",
-                        marginLeft: "16px",
-                        marginTop: "2px",
-                        transition: "color 150ms",
-                      }}
-                    >
-                      ✕
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
             <button
-              onClick={() => setStep(1)}
-              disabled={selectedStyles.length === 0}
-              className="w-full transition-colors duration-200"
+              onClick={() => setScreen(1)}
+              className="w-full transition-colors duration-200 hover:bg-[#F3F2EF]"
               style={{
-                marginTop: "32px",
                 height: "56px",
-                background: selectedStyles.length === 0 ? "#ABABA4" : "#0E0E0E",
-                color: "#FFFFFF",
+                background: "#FFFFFF",
+                color: "#0E0E0E",
                 fontFamily: "var(--font-sans)",
                 fontWeight: 600,
                 fontSize: "13px",
                 textTransform: "uppercase",
                 letterSpacing: "0.22em",
                 border: "none",
-                cursor: selectedStyles.length === 0 ? "not-allowed" : "pointer",
+                cursor: "pointer",
+                maxWidth: "480px",
+                width: "100%",
               }}
             >
-              CONTINUE
+              LET&apos;S START →
             </button>
           </div>
-        )}
 
-        {/* ── Step 1: Occasion ── */}
-        {step === 1 && (
-          <div>
-            {/* Progress */}
-            <p className="font-mono-label" style={{ fontSize: "11px", color: "#6B6B66", marginBottom: "32px" }}>
-              2 OF 2
-            </p>
+          {/* Bottom wordmark */}
+          <p
+            className="font-mono-label text-center"
+            style={{ fontSize: "11px", color: W40, letterSpacing: "0.22em" }}
+          >
+            MIRROR
+          </p>
+        </div>
+      )}
 
-            <h1
-              className="font-display"
-              style={{
-                fontSize: "clamp(28px, 5vw, 40px)",
-                fontWeight: 500,
-                lineHeight: 1.08,
-                letterSpacing: "-0.01em",
-                color: "#0E0E0E",
-                marginBottom: "8px",
-              }}
-            >
-              What do you dress for most?
-            </h1>
-            <p style={{ fontSize: "14px", lineHeight: 1.6, color: "#6B6B66", marginBottom: "40px" }}>
-              Mirror will prioritise outfit suggestions for this context.
-            </p>
+      {/* ─────────────────────────────────────────
+          SCREEN 2 — Add Your First Piece
+      ───────────────────────────────────────── */}
+      {screen === 1 && (
+        <div className="flex-1 flex flex-col px-5 py-12 md:px-10" style={{ minHeight: "100svh" }}>
 
-            {/* Option rows */}
-            <div style={{ borderTop: "1px solid rgba(14,14,14,0.12)" }}>
-              {OCCASION_OPTIONS.map((occ) => {
-                const selected = selectedOccasion === occ;
-                return (
-                  <button
-                    key={occ}
-                    onClick={() => setSelectedOccasion(occ)}
-                    className="w-full text-left transition-colors duration-150"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      height: "60px",
-                      borderBottom: "1px solid rgba(14,14,14,0.12)",
-                      background: selected ? "#0E0E0E" : "transparent",
-                      padding: "0",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <span
-                      className="font-mono-label"
-                      style={{
-                        fontSize: "12px",
-                        color: selected ? "#FFFFFF" : "#0E0E0E",
-                        paddingLeft: selected ? "20px" : "0",
-                        transition: "padding 150ms, color 150ms",
-                      }}
-                    >
-                      {occ}
-                    </span>
-                    {selected && (
-                      <span
-                        className="font-mono-label"
-                        style={{ fontSize: "11px", color: "#FFFFFF", paddingRight: "20px" }}
-                      >
-                        ✕
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+          {/* Kicker */}
+          <p
+            className="font-mono-label"
+            style={{ fontSize: "11px", color: W60, marginBottom: "32px" }}
+          >
+            STEP 1 OF 1
+          </p>
 
-            <div style={{ display: "flex", gap: "8px", marginTop: "32px" }}>
+          {/* Headline */}
+          <h1
+            className="font-display italic text-white text-balance"
+            style={{
+              fontSize: "clamp(32px, 7vw, 60px)",
+              fontWeight: 500,
+              lineHeight: 1.02,
+              letterSpacing: "-0.015em",
+              marginBottom: "16px",
+            }}
+          >
+            Start with something
+            <br />
+            you already love.
+          </h1>
+
+          {/* Subline */}
+          <p
+            className="font-mono-label"
+            style={{
+              fontSize: "11px",
+              color: W60,
+              lineHeight: 1.8,
+              marginBottom: "48px",
+            }}
+          >
+            AN OUTFIT PHOTO, A SINGLE ITEM, OR A LINK.
+            <br />
+            MIRROR WILL DO THE REST.
+          </p>
+
+          {/* Options */}
+          <div className="flex flex-col" style={{ gap: "1px", marginBottom: "auto" }}>
+            {addOptions.map((opt, i) => (
               <button
-                onClick={() => setStep(0)}
-                className="transition-colors duration-200"
+                key={i}
+                onClick={() => setScreen(2)}
+                className="w-full text-left transition-colors duration-150"
                 style={{
-                  flex: 1,
-                  height: "56px",
+                  padding: "20px 0",
+                  borderTop: i === 0 ? `1px solid ${W18}` : "none",
+                  borderBottom: `1px solid ${W18}`,
                   background: "transparent",
-                  color: "#0E0E0E",
-                  fontFamily: "var(--font-sans)",
-                  fontWeight: 600,
-                  fontSize: "13px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.22em",
-                  border: "1px solid rgba(14,14,14,0.24)",
                   cursor: "pointer",
                 }}
+                onMouseOver={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.04)")}
+                onMouseOut={(e) => (e.currentTarget.style.background = "transparent")}
               >
-                BACK
+                <p
+                  style={{
+                    fontFamily: "var(--font-sans)",
+                    fontWeight: 600,
+                    fontSize: "13px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.22em",
+                    color: "#FFFFFF",
+                    marginBottom: "6px",
+                  }}
+                >
+                  {opt.label}
+                </p>
+                <p
+                  className="font-mono-label"
+                  style={{ fontSize: "10px", color: W40, letterSpacing: "0.12em" }}
+                >
+                  {opt.caption}
+                </p>
               </button>
-              <button
-                onClick={() => setStep(2)}
-                disabled={!selectedOccasion}
-                className="transition-colors duration-200"
-                style={{
-                  flex: 1,
-                  height: "56px",
-                  background: selectedOccasion ? "#0E0E0E" : "#ABABA4",
-                  color: "#FFFFFF",
-                  fontFamily: "var(--font-sans)",
-                  fontWeight: 600,
-                  fontSize: "13px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.22em",
-                  border: "none",
-                  cursor: selectedOccasion ? "pointer" : "not-allowed",
-                }}
-              >
-                FINISH
-              </button>
-            </div>
+            ))}
           </div>
-        )}
 
-        {/* ── Step 2: Done ── */}
-        {step === 2 && (
-          <div style={{ textAlign: "center", paddingTop: "48px" }}>
-            <p className="font-mono-label" style={{ fontSize: "11px", color: "#6B6B66", marginBottom: "24px" }}>
-              YOU&apos;RE ALL SET
-            </p>
-            <h1
-              className="font-display"
+          {/* Skip */}
+          <div className="text-center" style={{ marginTop: "40px" }}>
+            <button
+              onClick={() => setScreen(2)}
+              className="font-mono-label transition-colors duration-200"
               style={{
-                fontSize: "clamp(36px, 7vw, 56px)",
-                fontWeight: 500,
-                lineHeight: 1.02,
-                letterSpacing: "-0.015em",
-                color: "#0E0E0E",
-                marginBottom: "16px",
+                fontSize: "11px",
+                color: W40,
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                letterSpacing: "0.14em",
               }}
+              onMouseOver={(e) => (e.currentTarget.style.color = W60)}
+              onMouseOut={(e) => (e.currentTarget.style.color = W40)}
             >
-              Welcome to Mirror.
-            </h1>
-            <p style={{ fontSize: "15px", lineHeight: 1.6, color: "#6B6B66", marginBottom: "48px" }}>
-              Start by adding items to your wardrobe. Mirror will get to work.
-            </p>
-            <Link
-              href="/closet/add"
-              className="w-full inline-flex items-center justify-center transition-colors duration-200 hover:bg-[#1A1A1A]"
-              style={{
-                height: "56px",
-                background: "#0E0E0E",
-                color: "#FFFFFF",
-                fontFamily: "var(--font-sans)",
-                fontWeight: 600,
-                fontSize: "13px",
-                textTransform: "uppercase",
-                letterSpacing: "0.22em",
-                textDecoration: "none",
-              }}
-            >
-              ADD YOUR FIRST ITEM
-            </Link>
+              I&apos;LL ADD ITEMS LATER →
+            </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────
+          SCREEN 3 — Mirror is Ready
+      ───────────────────────────────────────── */}
+      {screen === 2 && (
+        <div
+          className="flex-1 flex flex-col items-center justify-center text-center px-5 py-12 md:px-10"
+          style={{ minHeight: "100svh" }}
+        >
+          <h1
+            className="font-display italic text-white text-balance"
+            style={{
+              fontSize: "clamp(40px, 9vw, 80px)",
+              fontWeight: 500,
+              lineHeight: 0.98,
+              letterSpacing: "-0.015em",
+              marginBottom: "24px",
+            }}
+          >
+            Mirror is ready.
+          </h1>
+
+          <p
+            className="font-mono-label"
+            style={{
+              fontSize: "11px",
+              color: W60,
+              lineHeight: 1.8,
+              marginBottom: "48px",
+            }}
+          >
+            ADD MORE PIECES TO GET YOUR FIRST OUTFIT.
+          </p>
+
+          <button
+            onClick={() => router.push("/closet")}
+            className="w-full transition-colors duration-200 hover:bg-[#F3F2EF]"
+            style={{
+              height: "56px",
+              background: "#FFFFFF",
+              color: "#0E0E0E",
+              fontFamily: "var(--font-sans)",
+              fontWeight: 600,
+              fontSize: "13px",
+              textTransform: "uppercase",
+              letterSpacing: "0.22em",
+              border: "none",
+              cursor: "pointer",
+              maxWidth: "480px",
+              width: "100%",
+            }}
+          >
+            GO TO MY WARDROBE →
+          </button>
+
+          <p
+            className="font-mono-label"
+            style={{
+              fontSize: "10px",
+              color: W40,
+              marginTop: "20px",
+              letterSpacing: "0.12em",
+            }}
+          >
+            YOUR STYLE PROFILE BUILDS AS YOU ADD MORE.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
