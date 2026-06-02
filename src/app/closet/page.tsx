@@ -368,6 +368,19 @@ export default function ClosetPage() {
           >
             Closet
           </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+            <Link
+              href="/checker"
+              style={{
+                ...MONO,
+                fontSize: 10,
+                letterSpacing: "0.16em",
+                color: "#6B6B66",
+                textDecoration: "none",
+              }}
+            >
+              BUY?
+            </Link>
           <Link
             href="/add"
             aria-label="Add item"
@@ -396,6 +409,7 @@ export default function ClosetPage() {
               <line x1="3" y1="10" x2="17" y2="10" />
             </svg>
           </Link>
+          </div>
         </header>
 
         {/* ── Scrollable body ── */}
