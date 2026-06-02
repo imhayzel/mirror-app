@@ -58,4 +58,13 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* White CTA button on dark backgrounds — hover shifts to Paper */
+  .landing-btn-white {
+    background: #ffffff;
+    color: #0E0E0E;
+  }
+  .landing-btn-white:hover {
+    background: #F3F2EF;
+  }
 }
