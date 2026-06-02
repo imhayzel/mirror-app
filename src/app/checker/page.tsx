@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Link from "next/link";
 import BottomNav from "@/components/BottomNav";
 
 const HAIRLINE = "1px solid rgba(14,14,14,0.12)";
@@ -50,21 +51,29 @@ export default function CheckerPage() {
 
       {/* ── Top bar ── */}
       <header
-        className="sticky top-0 z-50 flex items-end px-5 md:px-10"
+        className="sticky top-0 z-50 flex items-center justify-between px-5 md:px-10"
         style={{
           background: "#F3F2EF",
           borderBottom: HAIRLINE,
-          height: "72px",
-          paddingBottom: "14px",
+          height: "56px",
           flexShrink: 0,
         }}
       >
+        <Link
+          href="/closet"
+          className="font-mono-label transition-colors duration-150"
+          style={{ fontSize: "11px", color: "#6B6B66", textDecoration: "none" }}
+        >
+          ← CLOSET
+        </Link>
         <h1
           className="font-display italic"
-          style={{ fontSize: "28px", fontWeight: 500, letterSpacing: "-0.01em", color: "#0E0E0E", lineHeight: 1 }}
+          style={{ fontSize: "20px", fontWeight: 500, letterSpacing: "-0.01em", color: "#0E0E0E", lineHeight: 1 }}
         >
           Should I buy this?
         </h1>
+        {/* spacer to balance the back link */}
+        <span style={{ width: "64px" }} />
       </header>
 
       {/* ══════════════════════════════════════════
