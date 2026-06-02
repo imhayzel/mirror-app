@@ -1,155 +1,699 @@
 "use client";
 
-const OUTFIT_ITEMS = [
-  { id: 1, name: "IVORY LINEN SHIRT", type: "TOP", bg: "#DDD8CC" },
-  { id: 2, name: "CHARCOAL TROUSERS", type: "BOTTOM", bg: "#4A4A4A" },
-  { id: 3, name: "TAN LOAFERS", type: "SHOES", bg: "#C4A882" },
-] as const;
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import BottomNav from "@/components/BottomNav";
 
-const REASONING =
-  "A considered combination built around restraint. The ivory linen shirt reads effortless against the charcoal weight below — clean contrast, no aggression. Tan loafers ground the palette with warmth. This works for a day that could go either way.";
+// ─── placeholder outfit data ──────────────────────────────────────────────────
 
-const NAV = ["TODAY", "WARDROBE", "STYLE", "SHOP", "PROFILE"] as const;
+const OUTFIT_PIECES = ["Camel wool coat", "Ivory ribbed crew", "Pleated wide-leg"];
+const OUTFIT_REASONING =
+  "A considered combination built around restraint. The ivory crew reads effortless against the charcoal weight below — clean contrast, no aggression. This works for a day that could go either way.";
 
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-GB", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  })
-    .format(date)
+// ─── types ────────────────────────────────────────────────────────────────────
+
+type LastOutfit = {
+  id: string;
+  items: string[] | null;
+  created_at: string;
+};
+
+// ─── style constants ──────────────────────────────────────────────────────────
+
+const MONO: React.CSSProperties = {
+  fontFamily: "var(--font-mono), 'SFMono-Regular', monospace",
+};
+const SERIF: React.CSSProperties = {
+  fontFamily: "var(--font-display), Georgia, serif",
+};
+const SANS: React.CSSProperties = {
+  fontFamily: "var(--font-sans), 'Helvetica Neue', Arial, sans-serif",
+};
+
+// ─── helpers ──────────────────────────────────────────────────────────────────
+
+function formatDateKicker(date: Date): string {
+  const weekday = date.toLocaleDateString("en-GB", { weekday: "long" }).toUpperCase();
+  const day = date.getDate();
+  const month = date.toLocaleDateString("en-GB", { month: "long" }).toUpperCase();
+  const year = date.getFullYear();
+  return `${weekday} · ${day} ${month} ${year}`;
+}
+
+function formatShortDate(iso: string): string {
+  return new Date(iso)
+    .toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
     .toUpperCase();
 }
 
+function outfitLabel(items: string[] | null): string {
+  if (!items || items.length === 0) return "Untitled look";
+  if (items.length === 1) return items[0];
+  return `${items[0]} × ${items[1]}`;
+}
+
+// ─── ChoiceRow ────────────────────────────────────────────────────────────────
+
+function ChoiceRow({
+  label,
+  isLast,
+  onTap,
+}: {
+  label: string;
+  isLast?: boolean;
+  onTap: () => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={onTap}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width: "100%",
+        minHeight: 56,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "0 24px",
+        background: hovered ? "rgba(14,14,14,0.04)" : "transparent",
+        border: "none",
+        borderBottom: isLast ? "none" : "1px solid rgba(14,14,14,0.08)",
+        cursor: "pointer",
+        transition: "background 0.14s cubic-bezier(0.22,1,0.36,1)",
+        textAlign: "left",
+      }}
+    >
+      <span
+        style={{
+          ...SERIF,
+          fontSize: 17,
+          fontWeight: 500,
+          lineHeight: 1.2,
+          color: "#0E0E0E",
+          letterSpacing: "-0.005em",
+        }}
+      >
+        {label}
+      </span>
+      <span
+        style={{
+          ...MONO,
+          fontSize: 13,
+          color: "#8C8C86",
+          flexShrink: 0,
+          marginLeft: 12,
+        }}
+      >
+        →
+      </span>
+    </button>
+  );
+}
+
+// ─── VibeSheet ────────────────────────────────────────────────────────────────
+
+function VibeSheet({
+  prompt,
+  placeholder,
+  submitLabel,
+  onClose,
+  onSubmit,
+}: {
+  prompt: string;
+  placeholder: string;
+  submitLabel: string;
+  onClose: () => void;
+  onSubmit: (text: string) => void;
+}) {
+  const [text, setText] = useState("");
+  return (
+    <>
+      <div
+        onClick={onClose}
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(14,14,14,0.4)",
+          zIndex: 40,
+        }}
+      />
+      <div
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "100%",
+          maxWidth: 390,
+          background: "#FAFAF8",
+          borderTop: "1px solid rgba(14,14,14,0.14)",
+          zIndex: 50,
+          padding: "0 24px 44px",
+        }}
+      >
+        {/* drag handle */}
+        <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 22px" }}>
+          <div style={{ width: 32, height: 3, background: "rgba(14,14,14,0.18)" }} />
+        </div>
+
+        {/* prompt */}
+        <p
+          style={{
+            ...SERIF,
+            fontSize: 26,
+            fontWeight: 400,
+            fontStyle: "italic",
+            lineHeight: 1.2,
+            letterSpacing: "-0.01em",
+            color: "#0E0E0E",
+            margin: "0 0 22px",
+          }}
+        >
+          {prompt}
+        </p>
+
+        {/* input */}
+        <input
+          type="text"
+          autoFocus
+          placeholder={placeholder}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && text.trim() && onSubmit(text)}
+          style={{
+            ...MONO,
+            width: "100%",
+            background: "transparent",
+            border: "none",
+            borderBottom: "1px solid rgba(14,14,14,0.18)",
+            fontSize: 14,
+            letterSpacing: "0.06em",
+            color: "#0E0E0E",
+            padding: "0 0 14px",
+            outline: "none",
+            boxSizing: "border-box",
+            marginBottom: 24,
+          }}
+        />
+
+        {/* submit */}
+        <button
+          type="button"
+          onClick={() => text.trim() && onSubmit(text)}
+          style={{
+            ...SANS,
+            width: "100%",
+            height: 52,
+            background: text.trim() ? "#0E0E0E" : "rgba(14,14,14,0.12)",
+            color: text.trim() ? "#FFFFFF" : "rgba(14,14,14,0.3)",
+            border: "none",
+            fontSize: 13,
+            fontWeight: 600,
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+            cursor: text.trim() ? "pointer" : "default",
+            transition: "background 0.18s cubic-bezier(0.22,1,0.36,1), color 0.18s",
+          }}
+        >
+          {submitLabel}
+        </button>
+      </div>
+    </>
+  );
+}
+
+// ─── HomePage ─────────────────────────────────────────────────────────────────
+
 export default function HomePage() {
-  const today = formatDate(new Date());
+  const router = useRouter();
+  const dateKicker = formatDateKicker(new Date());
+
+  // outfit confirm state
+  const [saving, setSaving] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+
+  // sheets
+  const [vibeOpen, setVibeOpen] = useState(false);
+  const [occasionOpen, setOccasionOpen] = useState(false);
+
+  // last look
+  const [lastOutfit, setLastOutfit] = useState<LastOutfit | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("outfit_suggestions")
+      .select("id, items, created_at")
+      .eq("user_id", "demo-user")
+      .eq("worn", true)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .then(({ data }) => {
+        if (data && data.length > 0) setLastOutfit(data[0] as LastOutfit);
+      });
+  }, []);
+
+  const handleWearingThis = useCallback(async () => {
+    if (saving || confirmed) return;
+    setSaving(true);
+    try {
+      await supabase.from("outfit_suggestions").insert({
+        user_id: "demo-user",
+        items: OUTFIT_PIECES,
+        reasoning: OUTFIT_REASONING,
+        worn: true,
+      });
+      setConfirmed(true);
+      // refresh last look
+      setLastOutfit({
+        id: "new",
+        items: OUTFIT_PIECES,
+        created_at: new Date().toISOString(),
+      });
+    } catch {
+      // silent — no error UI needed at this level
+    } finally {
+      setSaving(false);
+    }
+  }, [saving, confirmed]);
+
+  const handleVibeSubmit = useCallback(() => {
+    setVibeOpen(false);
+    router.push("/outfit");
+  }, [router]);
+
+  const handleOccasionSubmit = useCallback(() => {
+    setOccasionOpen(false);
+    router.push("/outfit");
+  }, [router]);
 
   return (
-    <div className="min-h-screen bg-[#F5F5F0] flex justify-center">
-      <div className="w-full max-w-[390px] min-h-screen flex flex-col relative bg-[#F5F5F0]">
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#F3F2EF",
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 390,
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          background: "#F3F2EF",
+        }}
+      >
 
-        {/* Status bar */}
-        <div className="h-[44px] px-6 flex items-center justify-between shrink-0">
-          <span className="font-sans text-[15px] font-semibold text-[#0A0A0A]">
+        {/* ── Status bar ── */}
+        <div
+          style={{
+            height: 44,
+            padding: "0 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexShrink: 0,
+          }}
+        >
+          <span style={{ ...MONO, fontSize: 12, fontWeight: 500, letterSpacing: "0.08em", color: "#0E0E0E" }}>
             9:41
           </span>
-          <div className="flex items-center gap-[6px]">
-            <svg width="16" height="11" viewBox="0 0 16 11" aria-hidden="true" focusable="false">
-              <rect x="0" y="7" width="3" height="4" fill="#0A0A0A" />
-              <rect x="4.3" y="4.5" width="3" height="6.5" fill="#0A0A0A" />
-              <rect x="8.6" y="2" width="3" height="9" fill="#0A0A0A" />
-              <rect x="12.9" y="0" width="3" height="11" fill="#0A0A0A" />
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <svg width="16" height="11" viewBox="0 0 16 11" aria-hidden="true">
+              <rect x="0" y="7" width="3" height="4" fill="#0E0E0E" />
+              <rect x="4.3" y="4.5" width="3" height="6.5" fill="#0E0E0E" />
+              <rect x="8.6" y="2" width="3" height="9" fill="#0E0E0E" />
+              <rect x="12.9" y="0" width="3" height="11" fill="#0E0E0E" />
             </svg>
-            <svg width="25" height="12" viewBox="0 0 25 12" aria-hidden="true" focusable="false">
-              <rect x="0.5" y="0.5" width="21" height="11" stroke="#0A0A0A" strokeWidth="1" fill="none" />
-              <rect x="2" y="2" width="16" height="8" fill="#0A0A0A" />
-              <line x1="23" y1="4.5" x2="23" y2="7.5" stroke="#0A0A0A" strokeWidth="2" strokeLinecap="square" />
+            <svg width="25" height="12" viewBox="0 0 25 12" aria-hidden="true">
+              <rect x="0.5" y="0.5" width="21" height="11" stroke="#0E0E0E" strokeWidth="1" fill="none" />
+              <rect x="2" y="2" width="16" height="8" fill="#0E0E0E" />
+              <line x1="23" y1="4.5" x2="23" y2="7.5" stroke="#0E0E0E" strokeWidth="2" strokeLinecap="square" />
             </svg>
           </div>
         </div>
 
-        {/* Top bar */}
-        <header className="h-[56px] px-6 flex items-center justify-between border-b border-[#0A0A0A] shrink-0">
-          <span className="font-display text-[24px] font-semibold leading-none text-[#0A0A0A]">
+        {/* ── Top bar ── */}
+        <header
+          style={{
+            height: 52,
+            padding: "0 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexShrink: 0,
+            borderBottom: "1px solid rgba(14,14,14,0.12)",
+          }}
+        >
+          <span
+            style={{
+              ...SERIF,
+              fontSize: 24,
+              fontWeight: 500,
+              letterSpacing: "-0.01em",
+              color: "#0E0E0E",
+              lineHeight: 1,
+            }}
+          >
             Mirror
           </span>
-          {/* Profile avatar — rounded-full is the sole permitted exception in the design system */}
-          <div className="w-[36px] h-[36px] rounded-full bg-[#0A0A0A] flex items-center justify-center" aria-label="Profile">
-            <span className="font-sans text-[13px] font-semibold text-white uppercase">
-              H
-            </span>
-          </div>
+          <span style={{ ...MONO, fontSize: 11, fontWeight: 500, letterSpacing: "0.08em", color: "#6B6B66" }}>
+            18°
+          </span>
         </header>
 
-        {/* Scrollable body */}
-        <main className="flex-1 overflow-y-auto pb-[80px]">
+        {/* ── Scrollable body ── */}
+        <main style={{ flex: 1, overflowY: "auto", paddingBottom: 80 }}>
 
-          {/* Date + primary CTA */}
-          <div className="px-6 pt-8">
-            <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.08em] text-[#5C5C5C] mb-6">
-              {today}
-            </p>
-            <button
-              type="button"
-              className="w-full h-[52px] bg-[#0A0A0A] text-white font-sans text-[13px] font-semibold uppercase tracking-[0.08em] hover:bg-[#C8F000] hover:text-[#0A0A0A] transition-colors"
+          {/* ── Date kicker ── */}
+          <div
+            style={{
+              padding: "14px 24px",
+              borderBottom: "1px solid rgba(14,14,14,0.08)",
+            }}
+          >
+            <span
+              style={{
+                ...MONO,
+                fontSize: 10,
+                fontWeight: 500,
+                letterSpacing: "0.14em",
+                color: "#8C8C86",
+                textTransform: "uppercase",
+              }}
             >
-              GET TODAY&apos;S OUTFIT
-            </button>
+              {dateKicker}
+            </span>
           </div>
 
-          {/* Last outfit — flat lay */}
-          <div className="px-6 mt-8">
-            <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.08em] text-[#5C5C5C] mb-4">
-              LAST OUTFIT
+          {/* ══ CARD 1 — Mirror decides ══════════════════════════ */}
+          <div style={{ background: "#0E0E0E", padding: "24px 24px 0" }}>
+
+            {/* kicker */}
+            <span
+              style={{
+                ...MONO,
+                fontSize: 9,
+                fontWeight: 500,
+                letterSpacing: "0.18em",
+                color: "rgba(255,255,255,0.4)",
+                textTransform: "uppercase",
+                display: "block",
+                marginBottom: 12,
+              }}
+            >
+              TODAY&apos;S LOOK
+            </span>
+
+            {/* headline */}
+            <p
+              style={{
+                ...SERIF,
+                fontSize: 38,
+                fontWeight: 500,
+                fontStyle: "italic",
+                lineHeight: 1.05,
+                letterSpacing: "-0.02em",
+                color: "#FFFFFF",
+                margin: "0 0 20px",
+              }}
+            >
+              Today, the camel coat.
             </p>
 
-            {/* 3 clothing item cards — 2px gap, contact-sheet density */}
-            <div className="flex gap-[2px]">
-              {OUTFIT_ITEMS.map((item) => (
-                <div key={item.id} className="flex-1 border border-[#0A0A0A] bg-white">
-                  <div
-                    className="w-full aspect-[3/4]"
-                    style={{ backgroundColor: item.bg }}
-                    role="img"
-                    aria-label={item.name}
-                  />
-                  <div className="border-t border-[#0A0A0A] px-2 py-2">
-                    <p className="font-sans text-[9px] font-semibold uppercase tracking-[0.08em] text-[#0A0A0A] leading-[13px] truncate">
-                      {item.name}
-                    </p>
-                    <p className="font-sans text-[9px] font-semibold uppercase tracking-[0.1em] text-[#5C5C5C] leading-[13px]">
-                      {item.type}
-                    </p>
-                  </div>
+            {/* flat lay image — 4:3 ratio, tappable */}
+            <div
+              onClick={() => router.push("/outfit")}
+              style={{
+                aspectRatio: "4/3",
+                position: "relative",
+                overflow: "hidden",
+                cursor: "pointer",
+                marginLeft: -24,
+                marginRight: -24,
+                width: "calc(100% + 48px)",
+              } as React.CSSProperties}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "linear-gradient(160deg,#3a3a38 0%,#8c8b85 48%,#c8c7c0 100%)",
+                }}
+              />
+              {/* bottom strip */}
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  padding: "10px 16px",
+                  background: "linear-gradient(to top, rgba(14,14,14,0.55) 0%, transparent 100%)",
+                }}
+              >
+                <span
+                  style={{
+                    ...MONO,
+                    fontSize: 9.5,
+                    fontWeight: 500,
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.92)",
+                  }}
+                >
+                  STYLED FOR 18° · OFFICE
+                </span>
+              </div>
+            </div>
+
+            {/* WEARING THIS / Noted. */}
+            <div style={{ padding: "16px 0 24px" }}>
+              {confirmed ? (
+                <div
+                  style={{
+                    height: 52,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    border: "1px solid rgba(255,255,255,0.14)",
+                  }}
+                >
+                  <span
+                    style={{
+                      ...MONO,
+                      fontSize: 13,
+                      fontWeight: 500,
+                      letterSpacing: "0.18em",
+                      color: "#2F7D5B",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Noted.
+                  </span>
                 </div>
-              ))}
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleWearingThis}
+                  disabled={saving}
+                  style={{
+                    ...SANS,
+                    width: "100%",
+                    height: 52,
+                    background: saving ? "rgba(255,255,255,0.6)" : "#FFFFFF",
+                    color: "#0E0E0E",
+                    border: "none",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    letterSpacing: "0.22em",
+                    textTransform: "uppercase",
+                    cursor: saving ? "default" : "pointer",
+                    display: "block",
+                    transition: "background 0.18s cubic-bezier(0.22,1,0.36,1)",
+                  }}
+                >
+                  {saving ? "SAVING…" : "WEARING THIS"}
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Outfit result card — inverted, black background */}
-          <div className="mx-6 mt-[2px] bg-[#0A0A0A] p-6">
-            <p className="font-sans text-[11px] font-semibold uppercase tracking-[0.1em] text-[#5C5C5C] mb-4">
-              CLAUDE&apos;S NOTES
-            </p>
-            <h2 className="font-display text-[24px] font-semibold leading-[30px] text-white mb-4">
-              Today&apos;s Look
-            </h2>
-            <p className="font-sans text-[14px] leading-[22px] text-white/70">
-              {REASONING}
-            </p>
+          {/* ══ CARD 2 — You decide ════════════════════════════ */}
+          <div
+            style={{
+              background: "#F3F2EF",
+              borderTop: "1px solid rgba(14,14,14,0.12)",
+            }}
+          >
+            {/* kicker */}
+            <div style={{ padding: "20px 24px 4px" }}>
+              <span
+                style={{
+                  ...MONO,
+                  fontSize: 9,
+                  fontWeight: 500,
+                  letterSpacing: "0.18em",
+                  color: "#8C8C86",
+                  textTransform: "uppercase",
+                }}
+              >
+                BUILD YOUR OWN
+              </span>
+            </div>
+
+            {/* rows */}
+            <div style={{ borderTop: "1px solid rgba(14,14,14,0.08)" }}>
+              <ChoiceRow
+                label="Start with a piece"
+                onTap={() => router.push("/closet?mode=pick")}
+              />
+              <ChoiceRow
+                label="I have a vibe"
+                onTap={() => setVibeOpen(true)}
+              />
+              <ChoiceRow
+                label="I have an occasion"
+                isLast
+                onTap={() => setOccasionOpen(true)}
+              />
+            </div>
           </div>
+
+          {/* ══ LAST LOOK (conditional) ══════════════════════════ */}
+          {lastOutfit && (
+            <div
+              style={{
+                background: "#F3F2EF",
+                borderTop: "1px solid rgba(14,14,14,0.12)",
+                padding: "20px 24px 28px",
+              }}
+            >
+              {/* kicker */}
+              <span
+                style={{
+                  ...MONO,
+                  fontSize: 9,
+                  fontWeight: 500,
+                  letterSpacing: "0.18em",
+                  color: "#8C8C86",
+                  textTransform: "uppercase",
+                  display: "block",
+                  marginBottom: 14,
+                }}
+              >
+                LAST LOOK
+              </span>
+
+              {/* card — tappable */}
+              <button
+                type="button"
+                onClick={() => router.push("/outfit")}
+                style={{
+                  width: "100%",
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 14,
+                  textAlign: "left",
+                }}
+              >
+                {/* thumb */}
+                <div
+                  style={{
+                    width: 52,
+                    height: 66,
+                    flexShrink: 0,
+                    background: "linear-gradient(155deg,#2c2c2a 0%,#7e7d78 55%,#cbcac4 100%)",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      bottom: 0,
+                      left: "55%",
+                      width: 1,
+                      background: "rgba(255,255,255,0.14)",
+                    }}
+                  />
+                </div>
+
+                {/* text */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p
+                    style={{
+                      ...SERIF,
+                      fontSize: 16,
+                      fontWeight: 500,
+                      fontStyle: "italic",
+                      lineHeight: 1.2,
+                      letterSpacing: "-0.005em",
+                      color: "#0E0E0E",
+                      margin: "0 0 5px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {outfitLabel(lastOutfit.items)}
+                  </p>
+                  <span
+                    style={{
+                      ...MONO,
+                      fontSize: 9,
+                      letterSpacing: "0.12em",
+                      color: "#8C8C86",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {formatShortDate(lastOutfit.created_at)}
+                  </span>
+                </div>
+
+                {/* arrow */}
+                <span style={{ ...MONO, fontSize: 13, color: "#ABABA4", flexShrink: 0 }}>
+                  →
+                </span>
+              </button>
+            </div>
+          )}
 
         </main>
 
-        {/* Bottom nav — accent dot is the ONE #C8F000 use on this screen */}
-        <nav
-          className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[390px] h-[64px] bg-[#F5F5F0] border-t border-[#0A0A0A] flex"
-          aria-label="Main navigation"
-        >
-          {NAV.map((label) => {
-            const isActive = label === "TODAY";
-            return (
-              <button
-                key={label}
-                type="button"
-                aria-current={isActive ? "page" : undefined}
-                className="flex-1 flex flex-col items-center justify-center gap-1"
-              >
-                <div
-                  className="w-[5px] h-[5px]"
-                  style={{ backgroundColor: isActive ? "#C8F000" : "transparent" }}
-                />
-                <span
-                  className="font-sans text-[9px] font-semibold uppercase tracking-[0.08em]"
-                  style={{ color: isActive ? "#0A0A0A" : "#5C5C5C" }}
-                >
-                  {label}
-                </span>
-              </button>
-            );
-          })}
-        </nav>
+        <BottomNav />
+
+        {/* ── Vibe sheet ── */}
+        {vibeOpen && (
+          <VibeSheet
+            prompt="What's the feeling today?"
+            placeholder="relaxed but put together..."
+            submitLabel="FIND MY LOOK →"
+            onClose={() => setVibeOpen(false)}
+            onSubmit={handleVibeSubmit}
+          />
+        )}
+
+        {/* ── Occasion sheet ── */}
+        {occasionOpen && (
+          <VibeSheet
+            prompt="What's the occasion?"
+            placeholder="dinner, presentation, weekend..."
+            submitLabel="DRESS ME FOR THIS →"
+            onClose={() => setOccasionOpen(false)}
+            onSubmit={handleOccasionSubmit}
+          />
+        )}
 
       </div>
     </div>

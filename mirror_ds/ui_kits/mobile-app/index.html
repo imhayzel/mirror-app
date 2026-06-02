@@ -1,0 +1,985 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mirror — Mobile App UI Kit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Archivo:ital,wght@0,300..800;1,400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --font-display:"Newsreader","Georgia",serif;
+  --font-sans:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,monospace;
+  --paper:#F3F2EF; --paper-2:#ECEBE7; --card:#FAFAF8; --white:#fff;
+  --ink:#0E0E0E; --ink-soft:#1A1A1A;
+  --slate-700:#3A3A38; --slate-500:#6B6B66; --slate-400:#8C8C86; --slate-300:#ABABA4; --slate-200:#C9C8C2; --slate-100:#DEDDD8;
+  --line:rgba(14,14,14,.12); --line-strong:rgba(14,14,14,.24); --line-faint:rgba(14,14,14,.06);
+  --fill-hover:rgba(14,14,14,.04); --fill-press:rgba(14,14,14,.08);
+  --on-ink-soft:rgba(255,255,255,.64);
+  --positive:#2F7D5B; --critical:#B23A33;
+  --ease-out:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper-2);font-family:var(--font-sans);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:28px 20px;}
+.grain{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(rgba(0,0,0,.10) .6px,transparent .6px);background-size:3px 3px;mix-blend-mode:multiply}
+.grain-light{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(rgba(255,255,255,.06) .6px,transparent .6px);background-size:3px 3px}
+.noscroll::-webkit-scrollbar{display:none}
+.noscroll{scrollbar-width:none}
+button{font-family:inherit}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+<!-- App code is bundled inline below (generated from the .jsx source files in this folder)
+     to avoid the multi-external-babel-script race. Edit the .jsx sources, then rebundle. -->
+<script type="text/babel" data-presets="react">
+
+/* ============ ios-frame.jsx ============ */
+
+/* BEGIN USAGE */
+// iOS.jsx — Simplified iOS 26 (Liquid Glass) device frame
+// Based on the iOS 26 UI Kit + Figma status bar spec. No assets, no deps.
+// Exports (to window): IOSDevice, IOSStatusBar, IOSNavBar, IOSGlassPill, IOSList, IOSListRow, IOSKeyboard
+//
+// Usage — wrap your screen content in <IOSDevice> to get the bezel, status bar
+// and home indicator (props: title, dark, keyboard):
+//
+//   <IOSDevice title="Settings">
+//     ...your screen content...
+//   </IOSDevice>
+//   <IOSDevice dark title="Search" keyboard>…</IOSDevice>
+/* END USAGE */
+
+// ─────────────────────────────────────────────────────────────
+// Status bar
+// ─────────────────────────────────────────────────────────────
+function IOSStatusBar({ dark = false, time = '9:41' }) {
+  const c = dark ? '#fff' : '#000';
+  return (
+    <div style={{
+      display: 'flex', gap: 154, alignItems: 'center', justifyContent: 'center',
+      padding: '21px 24px 19px', boxSizing: 'border-box',
+      position: 'relative', zIndex: 20, width: '100%',
+    }}>
+      <div style={{ flex: 1, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 1.5 }}>
+        <span style={{
+          fontFamily: '-apple-system, "SF Pro", system-ui', fontWeight: 590,
+          fontSize: 17, lineHeight: '22px', color: c,
+        }}>{time}</span>
+      </div>
+      <div style={{ flex: 1, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, paddingTop: 1, paddingRight: 1 }}>
+        <svg width="19" height="12" viewBox="0 0 19 12">
+          <rect x="0" y="7.5" width="3.2" height="4.5" rx="0.7" fill={c}/>
+          <rect x="4.8" y="5" width="3.2" height="7" rx="0.7" fill={c}/>
+          <rect x="9.6" y="2.5" width="3.2" height="9.5" rx="0.7" fill={c}/>
+          <rect x="14.4" y="0" width="3.2" height="12" rx="0.7" fill={c}/>
+        </svg>
+        <svg width="17" height="12" viewBox="0 0 17 12">
+          <path d="M8.5 3.2C10.8 3.2 12.9 4.1 14.4 5.6L15.5 4.5C13.7 2.7 11.2 1.5 8.5 1.5C5.8 1.5 3.3 2.7 1.5 4.5L2.6 5.6C4.1 4.1 6.2 3.2 8.5 3.2Z" fill={c}/>
+          <path d="M8.5 6.8C9.9 6.8 11.1 7.3 12 8.2L13.1 7.1C11.8 5.9 10.2 5.1 8.5 5.1C6.8 5.1 5.2 5.9 3.9 7.1L5 8.2C5.9 7.3 7.1 6.8 8.5 6.8Z" fill={c}/>
+          <circle cx="8.5" cy="10.5" r="1.5" fill={c}/>
+        </svg>
+        <svg width="27" height="13" viewBox="0 0 27 13">
+          <rect x="0.5" y="0.5" width="23" height="12" rx="3.5" stroke={c} strokeOpacity="0.35" fill="none"/>
+          <rect x="2" y="2" width="20" height="9" rx="2" fill={c}/>
+          <path d="M25 4.5V8.5C25.8 8.2 26.5 7.2 26.5 6.5C26.5 5.8 25.8 4.8 25 4.5Z" fill={c} fillOpacity="0.4"/>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Liquid glass pill — blur + tint + shine
+// ─────────────────────────────────────────────────────────────
+function IOSGlassPill({ children, dark = false, style = {} }) {
+  return (
+    <div style={{
+      height: 44, minWidth: 44, borderRadius: 9999,
+      position: 'relative', overflow: 'hidden',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: dark
+        ? '0 2px 6px rgba(0,0,0,0.35), 0 6px 16px rgba(0,0,0,0.2)'
+        : '0 1px 3px rgba(0,0,0,0.07), 0 3px 10px rgba(0,0,0,0.06)',
+      ...style,
+    }}>
+      {/* blur + tint */}
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 9999,
+        backdropFilter: 'blur(12px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+        background: dark ? 'rgba(120,120,128,0.28)' : 'rgba(255,255,255,0.5)',
+      }} />
+      {/* shine */}
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 9999,
+        boxShadow: dark
+          ? 'inset 1.5px 1.5px 1px rgba(255,255,255,0.15), inset -1px -1px 1px rgba(255,255,255,0.08)'
+          : 'inset 1.5px 1.5px 1px rgba(255,255,255,0.7), inset -1px -1px 1px rgba(255,255,255,0.4)',
+        border: dark ? '0.5px solid rgba(255,255,255,0.15)' : '0.5px solid rgba(0,0,0,0.06)',
+      }} />
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', padding: '0 4px' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Navigation bar — glass pills + large title
+// ─────────────────────────────────────────────────────────────
+function IOSNavBar({ title = 'Title', dark = false, trailingIcon = true }) {
+  const muted = dark ? 'rgba(255,255,255,0.6)' : '#404040';
+  const text = dark ? '#fff' : '#000';
+  const pillIcon = (content) => (
+    <IOSGlassPill dark={dark}>
+      <div style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {content}
+      </div>
+    </IOSGlassPill>
+  );
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', gap: 10,
+      paddingTop: 62, paddingBottom: 10, position: 'relative', zIndex: 5,
+    }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 16px',
+      }}>
+        {/* back chevron */}
+        {pillIcon(
+          <svg width="12" height="20" viewBox="0 0 12 20" fill="none" style={{ marginLeft: -1 }}>
+            <path d="M10 2L2 10l8 8" stroke={muted} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        )}
+        {/* trailing ellipsis */}
+        {trailingIcon && pillIcon(
+          <svg width="22" height="6" viewBox="0 0 22 6">
+            <circle cx="3" cy="3" r="2.5" fill={muted}/>
+            <circle cx="11" cy="3" r="2.5" fill={muted}/>
+            <circle cx="19" cy="3" r="2.5" fill={muted}/>
+          </svg>
+        )}
+      </div>
+      {/* large title */}
+      <div style={{
+        padding: '0 16px',
+        fontFamily: '-apple-system, system-ui',
+        fontSize: 34, fontWeight: 700, lineHeight: '41px',
+        color: text, letterSpacing: 0.4,
+      }}>{title}</div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Grouped list (inset card, r:26) + row (52px)
+// ─────────────────────────────────────────────────────────────
+function IOSListRow({ title, detail, icon, chevron = true, isLast = false, dark = false }) {
+  const text = dark ? '#fff' : '#000';
+  const sec = dark ? 'rgba(235,235,245,0.6)' : 'rgba(60,60,67,0.6)';
+  const ter = dark ? 'rgba(235,235,245,0.3)' : 'rgba(60,60,67,0.3)';
+  const sep = dark ? 'rgba(84,84,88,0.65)' : 'rgba(60,60,67,0.12)';
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', minHeight: 52,
+      padding: '0 16px', position: 'relative',
+      fontFamily: '-apple-system, system-ui', fontSize: 17,
+      letterSpacing: -0.43,
+    }}>
+      {icon && (
+        <div style={{
+          width: 30, height: 30, borderRadius: 7, background: icon,
+          marginRight: 12, flexShrink: 0,
+        }} />
+      )}
+      <div style={{ flex: 1, color: text }}>{title}</div>
+      {detail && <span style={{ color: sec, marginRight: 6 }}>{detail}</span>}
+      {chevron && (
+        <svg width="8" height="14" viewBox="0 0 8 14" style={{ flexShrink: 0 }}>
+          <path d="M1 1l6 6-6 6" stroke={ter} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )}
+      {!isLast && (
+        <div style={{
+          position: 'absolute', bottom: 0, right: 0,
+          left: icon ? 58 : 16, height: 0.5, background: sep,
+        }} />
+      )}
+    </div>
+  );
+}
+
+function IOSList({ header, children, dark = false }) {
+  const hc = dark ? 'rgba(235,235,245,0.6)' : 'rgba(60,60,67,0.6)';
+  const bg = dark ? '#1C1C1E' : '#fff';
+  return (
+    <div>
+      {header && (
+        <div style={{
+          fontFamily: '-apple-system, system-ui', fontSize: 13,
+          color: hc, textTransform: 'uppercase',
+          padding: '8px 36px 6px', letterSpacing: -0.08,
+        }}>{header}</div>
+      )}
+      <div style={{
+        background: bg, borderRadius: 26,
+        margin: '0 16px', overflow: 'hidden',
+      }}>{children}</div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Device frame
+// ─────────────────────────────────────────────────────────────
+function IOSDevice({
+  children, width = 402, height = 874, dark = false,
+  title, keyboard = false,
+}) {
+  return (
+    <div style={{
+      width, height, borderRadius: 48, overflow: 'hidden',
+      position: 'relative', background: dark ? '#000' : '#F2F2F7',
+      boxShadow: '0 40px 80px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.12)',
+      fontFamily: '-apple-system, system-ui, sans-serif',
+      WebkitFontSmoothing: 'antialiased',
+    }}>
+      {/* dynamic island */}
+      <div style={{
+        position: 'absolute', top: 11, left: '50%', transform: 'translateX(-50%)',
+        width: 126, height: 37, borderRadius: 24, background: '#000', zIndex: 50,
+      }} />
+      {/* status bar (absolute) */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
+        <IOSStatusBar dark={dark} />
+      </div>
+      {/* nav + content */}
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        {title !== undefined && <IOSNavBar title={title} dark={dark} />}
+        <div style={{ flex: 1, overflow: 'auto' }}>{children}</div>
+        {keyboard && <IOSKeyboard dark={dark} />}
+      </div>
+      {/* home indicator — always on top */}
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 60,
+        height: 34, display: 'flex', justifyContent: 'center', alignItems: 'flex-end',
+        paddingBottom: 8, pointerEvents: 'none',
+      }}>
+        <div style={{
+          width: 139, height: 5, borderRadius: 100,
+          background: dark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.25)',
+        }} />
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// Keyboard — iOS 26 liquid glass
+// ─────────────────────────────────────────────────────────────
+function IOSKeyboard({ dark = false }) {
+  const glyph = dark ? 'rgba(255,255,255,0.7)' : '#595959';
+  const sugg = dark ? 'rgba(255,255,255,0.6)' : '#333';
+  const keyBg = dark ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.85)';
+
+  // special-key icons
+  const icons = {
+    shift: <svg width="19" height="17" viewBox="0 0 19 17"><path d="M9.5 1L1 9.5h4.5V16h8V9.5H18L9.5 1z" fill={glyph}/></svg>,
+    del: <svg width="23" height="17" viewBox="0 0 23 17"><path d="M7 1h13a2 2 0 012 2v11a2 2 0 01-2 2H7l-6-7.5L7 1z" fill="none" stroke={glyph} strokeWidth="1.6" strokeLinejoin="round"/><path d="M10 5l7 7M17 5l-7 7" stroke={glyph} strokeWidth="1.6" strokeLinecap="round"/></svg>,
+    ret: <svg width="20" height="14" viewBox="0 0 20 14"><path d="M18 1v6H4m0 0l4-4M4 7l4 4" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  };
+
+  const key = (content, { w, flex, ret, fs = 25, k } = {}) => (
+    <div key={k} style={{
+      height: 42, borderRadius: 8.5,
+      flex: flex ? 1 : undefined, width: w, minWidth: 0,
+      background: ret ? '#08f' : keyBg,
+      boxShadow: '0 1px 0 rgba(0,0,0,0.075)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: '-apple-system, "SF Compact", system-ui',
+      fontSize: fs, fontWeight: 458, color: ret ? '#fff' : glyph,
+    }}>{content}</div>
+  );
+
+  const row = (keys, pad = 0) => (
+    <div style={{ display: 'flex', gap: 6.5, justifyContent: 'center', padding: `0 ${pad}px` }}>
+      {keys.map(l => key(l, { flex: true, k: l }))}
+    </div>
+  );
+
+  return (
+    <div style={{
+      position: 'relative', zIndex: 15, borderRadius: 27, overflow: 'hidden',
+      padding: '11px 0 2px',
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      boxShadow: dark
+        ? '0 -2px 20px rgba(0,0,0,0.09)'
+        : '0 -1px 6px rgba(0,0,0,0.018), 0 -3px 20px rgba(0,0,0,0.012)',
+    }}>
+      {/* liquid glass bg — same recipe as nav pills */}
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 27,
+        backdropFilter: 'blur(12px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+        background: dark ? 'rgba(120,120,128,0.14)' : 'rgba(255,255,255,0.25)',
+      }} />
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: 27,
+        boxShadow: dark
+          ? 'inset 1.5px 1.5px 1px rgba(255,255,255,0.15)'
+          : 'inset 1.5px 1.5px 1px rgba(255,255,255,0.7), inset -1px -1px 1px rgba(255,255,255,0.4)',
+        border: dark ? '0.5px solid rgba(255,255,255,0.15)' : '0.5px solid rgba(0,0,0,0.06)',
+        pointerEvents: 'none',
+      }} />
+
+      {/* autocorrect bar */}
+      <div style={{
+        display: 'flex', gap: 20, alignItems: 'center',
+        padding: '8px 22px 13px', width: '100%', boxSizing: 'border-box',
+        position: 'relative',
+      }}>
+        {['"The"', 'the', 'to'].map((w, i) => (
+          <React.Fragment key={i}>
+            {i > 0 && <div style={{ width: 1, height: 25, background: '#ccc', opacity: 0.3 }} />}
+            <div style={{
+              flex: 1, textAlign: 'center',
+              fontFamily: '-apple-system, system-ui', fontSize: 17,
+              color: sugg, letterSpacing: -0.43, lineHeight: '22px',
+            }}>{w}</div>
+          </React.Fragment>
+        ))}
+      </div>
+
+      {/* key layout */}
+      <div style={{
+        display: 'flex', flexDirection: 'column', gap: 13,
+        padding: '0 6.5px', width: '100%', boxSizing: 'border-box',
+        position: 'relative',
+      }}>
+        {row(['q','w','e','r','t','y','u','i','o','p'])}
+        {row(['a','s','d','f','g','h','j','k','l'], 20)}
+        <div style={{ display: 'flex', gap: 14.25, alignItems: 'center' }}>
+          {key(icons.shift, { w: 45, k: 'shift' })}
+          <div style={{ display: 'flex', gap: 6.5, flex: 1 }}>
+            {['z','x','c','v','b','n','m'].map(l => key(l, { flex: true, k: l }))}
+          </div>
+          {key(icons.del, { w: 45, k: 'del' })}
+        </div>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          {key('ABC', { w: 92.25, fs: 18, k: 'abc' })}
+          {key('', { flex: true, k: 'space' })}
+          {key(icons.ret, { w: 92.25, ret: true, k: 'ret' })}
+        </div>
+      </div>
+
+      {/* bottom spacer (emoji+mic area, icons omitted) */}
+      <div style={{ height: 56, width: '100%', position: 'relative' }} />
+    </div>
+  );
+}
+
+Object.assign(window, {
+  IOSDevice, IOSStatusBar, IOSNavBar, IOSGlassPill, IOSList, IOSListRow, IOSKeyboard,
+});
+
+
+/* ============ mirror-ui.jsx ============ */
+/* mirror-ui.jsx — shared primitives for the Mirror mobile kit */
+
+// Lucide icon — renders into a span via innerHTML, then converts.
+function Icon({ name, size = 20, color = 'currentColor', stroke = 1.6, style = {} }) {
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    if (!ref.current || !window.lucide) return;
+    ref.current.innerHTML = `<i data-lucide="${name}"></i>`;
+    window.lucide.createIcons({
+      nameAttr: 'data-lucide',
+      attrs: { width: size, height: size, stroke: color, 'stroke-width': stroke },
+    });
+  }, [name, size, color, stroke]);
+  return <span ref={ref} style={{ display: 'inline-flex', width: size, height: size, alignItems: 'center', justifyContent: 'center', ...style }} />;
+}
+
+// Monospace utility label
+function Mono({ children, size = 12, track = 0.14, color = 'var(--ink)', style = {} }) {
+  return <span style={{ fontFamily: 'var(--font-mono)', fontSize: size, letterSpacing: `${track}em`, textTransform: 'uppercase', color, lineHeight: 1.2, ...style }}>{children}</span>;
+}
+
+// Kicker (mono, optional marker)
+function Kicker({ children, marker = false, color = 'var(--slate-400)', style = {} }) {
+  return (
+    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color, ...style }}>
+      {marker && <span style={{ marginRight: 7 }}>▸</span>}{children}
+    </div>
+  );
+}
+
+// Serif heading
+function Serif({ children, size = 32, weight = 500, color = 'var(--ink)', italic = false, style = {} }) {
+  return <div style={{ fontFamily: 'var(--font-display)', fontWeight: weight, fontStyle: italic ? 'italic' : 'normal', fontSize: size, lineHeight: 1.03, letterSpacing: '-0.01em', color, ...style }}>{children}</div>;
+}
+
+// Full-width mono button — variants: dark | light | outline | disabled | ghost-dark
+function Button({ children, variant = 'dark', onClick, full = true, style = {} }) {
+  const base = {
+    fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: 12, letterSpacing: '0.22em', textTransform: 'uppercase',
+    padding: '17px 24px', border: '1px solid transparent', cursor: 'pointer', width: full ? '100%' : 'auto',
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 9,
+    transition: 'background var(--ease-out) .18s, transform .12s', userSelect: 'none',
+  };
+  const variants = {
+    dark: { background: 'var(--ink)', color: 'var(--paper)' },
+    light: { background: 'var(--white)', color: 'var(--ink)', borderColor: 'var(--line)' },
+    outline: { background: 'transparent', color: 'var(--ink)', borderColor: 'var(--ink)' },
+    disabled: { background: 'var(--slate-200)', color: 'var(--slate-400)', cursor: 'default' },
+    'ghost-dark': { background: 'rgba(255,255,255,0.10)', color: 'var(--white)', borderColor: 'rgba(255,255,255,0.28)' },
+    'solid-light': { background: 'var(--white)', color: 'var(--ink)' },
+  };
+  const [press, setPress] = React.useState(false);
+  return (
+    <button onClick={variant === 'disabled' ? undefined : onClick}
+      onPointerDown={() => setPress(true)} onPointerUp={() => setPress(false)} onPointerLeave={() => setPress(false)}
+      style={{ ...base, ...variants[variant], transform: press ? 'scale(0.99)' : 'none', ...style }}>
+      {children}
+    </button>
+  );
+}
+
+// Filter pill
+function Pill({ children, active = false, muted = false, onClick, style = {} }) {
+  const s = active
+    ? { background: 'var(--ink)', color: 'var(--paper)', borderColor: 'var(--ink)' }
+    : muted
+      ? { background: 'transparent', color: 'var(--slate-400)', borderColor: 'var(--line-strong)' }
+      : { background: 'transparent', color: 'var(--ink)', borderColor: 'var(--ink)' };
+  return (
+    <button onClick={onClick} style={{
+      fontFamily: 'var(--font-mono)', fontSize: 12.5, letterSpacing: '0.04em',
+      border: '1px solid', borderRadius: 999, padding: '9px 17px', cursor: 'pointer',
+      whiteSpace: 'nowrap', transition: 'all var(--ease-out) .18s', ...s, ...style,
+    }}>{children}</button>
+  );
+}
+
+const PLATE_GRADS = [
+  'linear-gradient(155deg,#2c2c2a 0%,#7e7d78 55%,#cbcac4 100%)',
+  'linear-gradient(155deg,#1b1b1a,#525250,#9b9a95)',
+  'linear-gradient(150deg,#3a3a37,#86857f,#bdbcb6)',
+  'linear-gradient(160deg,#222221,#6d6c67,#a9a8a2)',
+  'linear-gradient(145deg,#45443f,#9a9994,#d2d1cb)',
+  'linear-gradient(165deg,#2f2f2c,#73726d)',
+];
+
+// Grayscale photographic placeholder plate with grain + optional fabric fold
+function Plate({ idx = 0, fold = false, style = {}, children, dark = false }) {
+  return (
+    <div style={{ position: 'relative', overflow: 'hidden', background: PLATE_GRADS[idx % PLATE_GRADS.length], filter: 'grayscale(1) contrast(1.06)', ...style }}>
+      {fold && <div style={{ position: 'absolute', top: 0, bottom: 0, left: '52%', width: 1, background: 'rgba(255,255,255,0.14)' }} />}
+      <div className="grain" />
+      {children}
+    </div>
+  );
+}
+
+function Divider({ faint = false, style = {} }) {
+  return <div style={{ height: 1, background: faint ? 'var(--line-faint)' : 'var(--line)', width: '100%', ...style }} />;
+}
+
+// Garment tile — plate + category + serif name
+function GarmentTile({ idx = 0, cat = 'OUTERWEAR', name = 'Item', worn, onClick, ratio = 1.25 }) {
+  return (
+    <div onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
+      <Plate idx={idx} fold style={{ width: '100%', aspectRatio: ratio }} />
+      <div style={{ paddingTop: 9 }}>
+        <Mono size={9} track={0.14} color="var(--slate-400)">{cat}</Mono>
+        <Serif size={18} style={{ marginTop: 3 }}>{name}</Serif>
+        {worn !== undefined && <Mono size={9.5} track={0.1} color="var(--slate-300)" style={{ display: 'block', marginTop: 4 }}>WORN {worn}×</Mono>}
+      </div>
+    </div>
+  );
+}
+
+// Field row — label + serif value + hairline
+function FieldRow({ label, value, placeholder, onClick }) {
+  return (
+    <div onClick={onClick} style={{ borderBottom: '1px solid var(--line)', padding: '6px 0 13px', marginBottom: 20, cursor: onClick ? 'pointer' : 'default' }}>
+      <div style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--slate-500)', marginBottom: 9 }}>{label}</div>
+      <Serif size={28} color={value ? 'var(--ink)' : 'var(--slate-300)'}>{value || placeholder}</Serif>
+    </div>
+  );
+}
+
+// App top bar — centered wordmark, hairline under, clears status bar
+function TopBar({ left, right, center = 'Mirror', serif = true, onLeft }) {
+  return (
+    <div style={{ paddingTop: 56, paddingBottom: 14, borderBottom: '1px solid var(--line)', position: 'relative', flexShrink: 0, background: 'var(--paper)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px', position: 'relative', minHeight: 30 }}>
+        {left && <div onClick={onLeft} style={{ position: 'absolute', left: 20, cursor: 'pointer', display: 'flex', alignItems: 'center' }}>{left}</div>}
+        {serif
+          ? <Serif size={26} style={{ letterSpacing: '0.01em' }}>{center}</Serif>
+          : <Mono size={12} track={0.16}>{center}</Mono>}
+        {right && <div style={{ position: 'absolute', right: 20, display: 'flex', alignItems: 'center' }}>{right}</div>}
+      </div>
+    </div>
+  );
+}
+
+// Bottom tab bar
+function TabBar({ active, onChange }) {
+  const tabs = ['Today', 'Closet', 'Add', 'Saved', 'You'];
+  return (
+    <div style={{ flexShrink: 0, borderTop: '1px solid var(--line)', background: 'var(--paper)', display: 'flex', justifyContent: 'space-between', padding: '15px 22px 30px' }}>
+      {tabs.map(t => (
+        <button key={t} onClick={() => onChange(t)} style={{
+          background: 'none', border: 'none', cursor: 'pointer', padding: '2px 2px',
+          fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase',
+          color: active === t ? 'var(--ink)' : 'var(--slate-300)', transition: 'color var(--ease-out) .18s',
+        }}>{t}</button>
+      ))}
+    </div>
+  );
+}
+
+// Screen scaffold — fills device, scrollable body, optional top/bottom chrome
+function Screen({ children, top, bottom, bg = 'var(--paper)', pad = true }) {
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: bg }}>
+      {top}
+      <div className="noscroll" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+        <div style={{ padding: pad ? '0 20px' : 0 }}>{children}</div>
+      </div>
+      {bottom}
+    </div>
+  );
+}
+
+Object.assign(window, { Icon, Mono, Kicker, Serif, Button, Pill, Plate, PLATE_GRADS, Divider, GarmentTile, FieldRow, TopBar, TabBar, Screen });
+
+
+/* ============ screen-today.jsx ============ */
+/* screen-today.jsx — the daily outfit hero */
+
+const TODAY_LOOKS = [
+  { statement: ['The camel', 'coat, finally.'], cap: 'STYLED FOR 18° · OFFICE', pieces: [
+      { cat: 'OUTERWEAR', name: 'Camel wool coat', worn: 22, idx: 0 },
+      { cat: 'KNITWEAR', name: 'Ivory ribbed crew', worn: 9, idx: 4 },
+      { cat: 'TROUSERS', name: 'Pleated wide-leg', worn: 14, idx: 2 },
+    ] },
+  { statement: ['Sharp, with', 'a soft edge.'], cap: 'STYLED FOR 18° · DINNER', pieces: [
+      { cat: 'TAILORING', name: 'Charcoal blazer', worn: 17, idx: 1 },
+      { cat: 'KNITWEAR', name: 'Fine merino tee', worn: 6, idx: 5 },
+      { cat: 'DENIM', name: 'Straight indigo', worn: 28, idx: 3 },
+    ] },
+  { statement: ['Quiet, and', 'all yours.'], cap: 'STYLED FOR 18° · WEEKEND', pieces: [
+      { cat: 'KNITWEAR', name: 'Oat oversized knit', worn: 11, idx: 4 },
+      { cat: 'TROUSERS', name: 'Cream wide trouser', worn: 8, idx: 2 },
+      { cat: 'OUTERWEAR', name: 'Grey trench', worn: 5, idx: 0 },
+    ] },
+];
+
+function TodayScreen({ onOpenOutfit, look, onShuffle, active, onTab }) {
+  const L = TODAY_LOOKS[look % TODAY_LOOKS.length];
+  return (
+    <Screen
+      top={<TopBar right={<Mono size={11} track={0.08} color="var(--slate-500)">18°</Mono>} />}
+      bottom={<TabBar active={active} onChange={onTab} />}
+    >
+      <div style={{ paddingTop: 22, paddingBottom: 28 }}>
+        <div style={{ fontFamily: 'var(--font-sans)', fontSize: 16, color: 'var(--slate-700)' }}>
+          Good morning, Elise.
+        </div>
+        <Mono size={11} track={0.1} color="var(--slate-400)" style={{ display: 'block', marginTop: 6 }}>
+          WED · MAY 29 · 18° · MOSTLY CLEAR
+        </Mono>
+
+        <Kicker marker style={{ marginTop: 30, marginBottom: 12 }}>TODAY'S LOOK</Kicker>
+        <Serif size={42} style={{ letterSpacing: '-0.02em' }}>
+          {L.statement[0]}<br />{L.statement[1]}
+        </Serif>
+
+        {/* hero plate */}
+        <div onClick={onOpenOutfit} style={{ marginTop: 22, cursor: 'pointer' }}>
+          <Plate idx={look} style={{ width: '100%', aspectRatio: 0.82 }}>
+            <div style={{ position: 'absolute', left: 14, bottom: 13 }}>
+              <Mono size={9.5} track={0.12} color="rgba(255,255,255,0.92)">{L.cap}</Mono>
+            </div>
+          </Plate>
+        </div>
+
+        {/* breakdown */}
+        <Kicker style={{ marginTop: 28, marginBottom: 4 }}>THE PIECES</Kicker>
+        <div>
+          {L.pieces.map((p, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '15px 0', borderBottom: '1px solid var(--line-faint)' }}>
+              <Plate idx={p.idx} fold style={{ width: 46, height: 58, flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <Mono size={9} track={0.12} color="var(--slate-400)">{p.cat}</Mono>
+                <Serif size={19} style={{ marginTop: 2 }}>{p.name}</Serif>
+              </div>
+              <Mono size={9.5} track={0.08} color="var(--slate-300)">{p.worn}×</Mono>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <Button variant="dark" onClick={onOpenOutfit}>See the full look</Button>
+          <Button variant="outline" onClick={onShuffle}>
+            <Icon name="shuffle" size={15} /> Shuffle
+          </Button>
+        </div>
+      </div>
+    </Screen>
+  );
+}
+
+Object.assign(window, { TodayScreen, TODAY_LOOKS });
+
+
+/* ============ screen-closet.jsx ============ */
+/* screen-closet.jsx — the wardrobe grid */
+
+const CLOSET = [
+  { cat: 'OUTERWEAR', group: 'Outerwear', name: 'Camel wool coat', worn: 22, idx: 0 },
+  { cat: 'OUTERWEAR', group: 'Outerwear', name: 'Grey trench', worn: 5, idx: 3 },
+  { cat: 'KNITWEAR', group: 'Knitwear', name: 'Ivory ribbed crew', worn: 9, idx: 4 },
+  { cat: 'KNITWEAR', group: 'Knitwear', name: 'Oat oversized knit', worn: 11, idx: 5 },
+  { cat: 'TAILORING', group: 'Tailoring', name: 'Charcoal blazer', worn: 17, idx: 1 },
+  { cat: 'TAILORING', group: 'Tailoring', name: 'Black wide suit', worn: 3, idx: 2 },
+  { cat: 'DENIM', group: 'Denim', name: 'Straight indigo', worn: 28, idx: 3 },
+  { cat: 'DENIM', group: 'Denim', name: 'Washed wide leg', worn: 13, idx: 0 },
+  { cat: 'TROUSERS', group: 'Trousers', name: 'Pleated wide-leg', worn: 14, idx: 2 },
+  { cat: 'TROUSERS', group: 'Trousers', name: 'Cream trouser', worn: 8, idx: 4 },
+  { cat: 'KNITWEAR', group: 'Knitwear', name: 'Fine merino tee', worn: 6, idx: 1 },
+  { cat: 'OUTERWEAR', group: 'Outerwear', name: 'Quilted black', worn: 7, idx: 5 },
+];
+const FILTERS = ['All', 'Outerwear', 'Knitwear', 'Tailoring', 'Denim', 'Trousers'];
+
+function ClosetScreen({ active, onTab, onOpenOutfit }) {
+  const [filter, setFilter] = React.useState('All');
+  const items = filter === 'All' ? CLOSET : CLOSET.filter(i => i.group === filter);
+  return (
+    <Screen
+      top={<TopBar center="Closet" serif right={<Icon name="search" size={19} />} />}
+      bottom={<TabBar active={active} onChange={onTab} />}
+      pad={false}
+    >
+      {/* stats */}
+      <div style={{ padding: '20px 20px 14px' }}>
+        <Serif size={30}>84 pieces.</Serif>
+        <Mono size={11} track={0.08} color="var(--slate-400)" style={{ display: 'block', marginTop: 7 }}>
+          11 ON ROTATION · 6 NOT WORN THIS SEASON
+        </Mono>
+      </div>
+
+      {/* filter pills — horizontal scroll */}
+      <div className="noscroll" style={{ display: 'flex', gap: 9, overflowX: 'auto', padding: '4px 20px 18px' }}>
+        {FILTERS.map(f => (
+          <Pill key={f} active={filter === f} onClick={() => setFilter(f)}>{f}</Pill>
+        ))}
+      </div>
+
+      {/* grid */}
+      <div style={{ padding: '0 20px 28px', display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 14, rowGap: 24 }}>
+        {items.map((it, i) => (
+          <GarmentTile key={i} idx={it.idx} cat={it.cat} name={it.name} worn={it.worn} onClick={onOpenOutfit} />
+        ))}
+      </div>
+    </Screen>
+  );
+}
+
+Object.assign(window, { ClosetScreen, CLOSET });
+
+
+/* ============ screen-add.jsx ============ */
+/* screen-add.jsx — dark immersive "add to closet" capture flow */
+
+function AddScreen({ onClose, onDone }) {
+  const [shots, setShots] = React.useState([]);
+  const capture = () => {
+    if (shots.length >= 6) return;
+    setShots(s => [...s, (s.length) % 6]);
+  };
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: '#0E0E0E', position: 'relative' }}>
+      {/* full-bleed dark viewfinder backdrop */}
+      <div style={{ position: 'absolute', inset: 0 }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(120% 80% at 60% 8%, #5a5a58 0%, #1c1c1b 52%, #0a0a0a 100%)', filter: 'grayscale(1) contrast(1.05)' }} />
+        <div className="grain-light" />
+      </div>
+
+      {/* top: skip */}
+      <div style={{ position: 'relative', paddingTop: 56, padding: '56px 20px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div onClick={onClose} style={{ cursor: 'pointer' }}><Mono size={11} track={0.16} color="rgba(255,255,255,0.6)">CLOSE</Mono></div>
+        <div onClick={onClose} style={{ cursor: 'pointer' }}><Mono size={11} track={0.16} color="rgba(255,255,255,0.85)">SKIP</Mono></div>
+      </div>
+
+      {/* headline */}
+      <div style={{ position: 'relative', padding: '34px 20px 0' }}>
+        <Kicker color="rgba(255,255,255,0.55)">ADD TO CLOSET</Kicker>
+        <Serif size={40} color="var(--paper)" style={{ marginTop: 12, letterSpacing: '-0.02em' }}>
+          A few photos.<br />We'll handle<br />the rest.
+        </Serif>
+      </div>
+
+      {/* viewfinder frame */}
+      <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <div style={{ position: 'relative', width: 200, height: 250 }}>
+          {[['top','left'],['top','right'],['bottom','left'],['bottom','right']].map(([v,h],i)=>(
+            <div key={i} style={{ position: 'absolute', [v]: 0, [h]: 0, width: 26, height: 26,
+              borderTop: v==='top'?'1.5px solid rgba(255,255,255,0.8)':'none',
+              borderBottom: v==='bottom'?'1.5px solid rgba(255,255,255,0.8)':'none',
+              borderLeft: h==='left'?'1.5px solid rgba(255,255,255,0.8)':'none',
+              borderRight: h==='right'?'1.5px solid rgba(255,255,255,0.8)':'none' }} />
+          ))}
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Mono size={9.5} track={0.14} color="rgba(255,255,255,0.5)">CENTER THE GARMENT</Mono>
+          </div>
+        </div>
+      </div>
+
+      {/* captured thumbs */}
+      {shots.length > 0 && (
+        <div style={{ position: 'relative', display: 'flex', gap: 8, padding: '0 20px 14px' }}>
+          {shots.map((idx, i) => (
+            <Plate key={i} idx={idx} fold style={{ width: 44, height: 56, border: '1px solid rgba(255,255,255,0.3)' }} />
+          ))}
+        </div>
+      )}
+
+      {/* shutter + action */}
+      <div style={{ position: 'relative', padding: '0 20px 14px', display: 'flex', alignItems: 'center', gap: 16 }}>
+        <Mono size={10} track={0.1} color="rgba(255,255,255,0.55)" style={{ width: 70 }}>{shots.length} ADDED</Mono>
+        <button onClick={capture} aria-label="capture" style={{ width: 64, height: 64, borderRadius: 999, border: '2px solid rgba(255,255,255,0.9)', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ width: 50, height: 50, borderRadius: 999, background: 'var(--paper)' }} />
+        </button>
+        <div style={{ width: 70, display: 'flex', justifyContent: 'flex-end' }}>
+          <Icon name="image" size={22} color="rgba(255,255,255,0.8)" />
+        </div>
+      </div>
+
+      <div style={{ position: 'relative', padding: '0 20px 30px' }}>
+        <Button variant={shots.length ? 'solid-light' : 'ghost-dark'} onClick={shots.length ? onDone : capture}>
+          {shots.length ? `Add ${shots.length} ${shots.length === 1 ? 'item' : 'items'}` : 'Take a photo'}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { AddScreen });
+
+
+/* ============ screen-outfit.jsx ============ */
+/* screen-outfit.jsx — outfit detail, presented as a full-screen overlay */
+
+function OutfitScreen({ look = 0, onClose }) {
+  const L = (window.TODAY_LOOKS || [])[look % (window.TODAY_LOOKS || [1]).length] || {
+    statement: ['The look'], cap: 'STYLED', pieces: [],
+  };
+  const [saved, setSaved] = React.useState(false);
+  return (
+    <div style={{ position: 'absolute', inset: 0, background: 'var(--paper)', zIndex: 100, display: 'flex', flexDirection: 'column' }}>
+      {/* header */}
+      <div style={{ paddingTop: 54, paddingBottom: 13, borderBottom: '1px solid var(--line)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '54px 20px 13px' }}>
+        <div onClick={onClose} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}><Icon name="x" size={22} /></div>
+        <Mono size={11} track={0.16} color="var(--slate-500)" style={{ whiteSpace: 'nowrap' }}>TODAY'S LOOK</Mono>
+        <div onClick={() => setSaved(s => !s)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+          <Icon name="heart" size={20} color={saved ? 'var(--critical)' : 'var(--ink)'} />
+        </div>
+      </div>
+
+      <div className="noscroll" style={{ flex: 1, overflowY: 'auto' }}>
+        {/* hero */}
+        <Plate idx={look} style={{ width: '100%', aspectRatio: 0.92 }}>
+          <div style={{ position: 'absolute', left: 16, bottom: 14 }}>
+            <Mono size={9.5} track={0.12} color="rgba(255,255,255,0.92)">{L.cap}</Mono>
+          </div>
+        </Plate>
+
+        <div style={{ padding: '24px 20px 0' }}>
+          <Serif size={38} style={{ letterSpacing: '-0.02em' }}>{L.statement.join(' ')}</Serif>
+
+          {/* why this */}
+          <div style={{ fontFamily: 'var(--font-sans)', fontSize: 15.5, lineHeight: 1.55, color: 'var(--slate-700)', marginTop: 16 }}>
+            Cool and dry today, so Mirror leaned into wool and a longer line. You've reached for these three together twice this month — it works.
+          </div>
+
+          {/* pieces */}
+          <Kicker style={{ marginTop: 30, marginBottom: 4 }}>THE PIECES</Kicker>
+          {L.pieces.map((p, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 0', borderBottom: '1px solid var(--line-faint)' }}>
+              <Plate idx={p.idx} fold style={{ width: 50, height: 64, flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <Mono size={9} track={0.12} color="var(--slate-400)">{p.cat}</Mono>
+                <Serif size={20} style={{ marginTop: 2 }}>{p.name}</Serif>
+              </div>
+              <Icon name="chevron-right" size={16} color="var(--slate-300)" />
+            </div>
+          ))}
+        </div>
+
+        <div style={{ padding: '26px 20px 36px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <Button variant="dark" onClick={() => setSaved(true)}>{saved ? 'Saved to your fits' : 'Save this fit'}</Button>
+          <Button variant="outline" onClick={onClose}>
+            <Icon name="shuffle" size={15} /> Try another
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { OutfitScreen });
+
+
+/* ============ screen-you.jsx ============ */
+/* screen-you.jsx — profile / style identity + settings */
+
+function YouScreen({ active, onTab }) {
+  const stats = [['PIECES', '84'], ['OUTFITS WORN', '212'], ['MOST WORN', 'STRAIGHT INDIGO'], ['NEVER WORN', '6']];
+  const settings = [
+    ['sparkles', 'Style profile', 'MINIMAL · NEUTRAL'],
+    ['calendar', 'Outfit history', ''],
+    ['cloud-sun', 'Weather & location', 'AUTO'],
+    ['heart', 'Saved fits', '14'],
+    ['settings', 'Preferences', ''],
+  ];
+  return (
+    <Screen
+      top={<TopBar center="You" serif right={<Icon name="settings" size={19} />} />}
+      bottom={<TabBar active={active} onChange={onTab} />}
+      pad={false}
+    >
+      {/* identity */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '24px 20px 22px' }}>
+        <Plate idx={5} style={{ width: 76, height: 76, borderRadius: 999, flexShrink: 0 }} />
+        <div>
+          <Serif size={30}>Elise Tan</Serif>
+          <Mono size={10} track={0.12} color="var(--slate-400)" style={{ display: 'block', marginTop: 5 }}>MINIMAL · NEUTRAL · TAILORED</Mono>
+        </div>
+      </div>
+
+      <Divider />
+
+      {/* stats grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: '1px solid var(--line)' }}>
+        {stats.map(([k, v], i) => (
+          <div key={i} style={{ padding: '18px 20px', borderRight: i % 2 === 0 ? '1px solid var(--line-faint)' : 'none', borderBottom: i < 2 ? '1px solid var(--line-faint)' : 'none' }}>
+            <Mono size={9.5} track={0.12} color="var(--slate-400)">{k}</Mono>
+            <Serif size={24} style={{ marginTop: 6 }}>{v}</Serif>
+          </div>
+        ))}
+      </div>
+
+      {/* settings list */}
+      <div style={{ padding: '6px 20px 28px' }}>
+        {settings.map(([icon, label, detail], i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '17px 0', borderBottom: '1px solid var(--line-faint)' }}>
+            <Icon name={icon} size={19} color="var(--slate-700)" />
+            <div style={{ flex: 1, fontFamily: 'var(--font-sans)', fontSize: 16.5, color: 'var(--ink)' }}>{label}</div>
+            {detail && <Mono size={10} track={0.08} color="var(--slate-400)">{detail}</Mono>}
+            <Icon name="chevron-right" size={15} color="var(--slate-300)" />
+          </div>
+        ))}
+      </div>
+    </Screen>
+  );
+}
+
+Object.assign(window, { YouScreen });
+
+
+/* ============ app.jsx ============ */
+/* app.jsx — Mirror mobile kit controller */
+
+function SavedScreen({ active, onTab, onOpenOutfit }) {
+  const fits = [
+    { idx: 0, name: 'Tuesday office', cap: 'WORN MAY 21' },
+    { idx: 1, name: 'Dinner, sharp', cap: 'WORN MAY 18' },
+    { idx: 2, name: 'Slow weekend', cap: 'SAVED MAY 12' },
+    { idx: 3, name: 'Rain plan', cap: 'SAVED MAY 09' },
+    { idx: 4, name: 'All cream', cap: 'SAVED MAY 04' },
+    { idx: 5, name: 'Black on black', cap: 'SAVED APR 28' },
+  ];
+  return (
+    <Screen
+      top={<TopBar center="Saved" serif right={<Icon name="heart" size={18} />} />}
+      bottom={<TabBar active={active} onChange={onTab} />}
+      pad={false}
+    >
+      <div style={{ padding: '20px 20px 16px' }}>
+        <Serif size={30}>Your fits.</Serif>
+        <Mono size={11} track={0.08} color="var(--slate-400)" style={{ display: 'block', marginTop: 7 }}>14 SAVED · 3 ON REPEAT</Mono>
+      </div>
+      <div style={{ padding: '0 20px 28px', display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 14, rowGap: 22 }}>
+        {fits.map((f, i) => (
+          <div key={i} onClick={() => onOpenOutfit(f.idx)} style={{ cursor: 'pointer' }}>
+            <Plate idx={f.idx} style={{ width: '100%', aspectRatio: 0.86 }}>
+              <div style={{ position: 'absolute', left: 10, bottom: 9 }}>
+                <Mono size={8} track={0.12} color="rgba(255,255,255,0.85)">{f.cap}</Mono>
+              </div>
+            </Plate>
+            <Serif size={17} style={{ marginTop: 8 }}>{f.name}</Serif>
+          </div>
+        ))}
+      </div>
+    </Screen>
+  );
+}
+
+function App() {
+  const [tab, setTab] = React.useState('Today');
+  const [mode, setMode] = React.useState(null);   // null | 'add'
+  const [look, setLook] = React.useState(0);
+  const [outfit, setOutfit] = React.useState(null); // null | look index
+
+  const handleTab = (t) => {
+    if (t === 'Add') { setMode('add'); return; }
+    setMode(null); setTab(t);
+  };
+  const openOutfit = (i) => setOutfit(i === undefined ? look : i);
+
+  // Dark capture flow — its own dark device for correct status-bar color
+  if (mode === 'add') {
+    return (
+      <IOSDevice dark>
+        <AddScreen onClose={() => { setMode(null); }} onDone={() => { setMode(null); setTab('Closet'); }} />
+      </IOSDevice>
+    );
+  }
+
+  let screen;
+  if (tab === 'Today') screen = <TodayScreen active={tab} onTab={handleTab} look={look} onShuffle={() => setLook(l => (l + 1) % 3)} onOpenOutfit={() => openOutfit(look)} />;
+  else if (tab === 'Closet') screen = <ClosetScreen active={tab} onTab={handleTab} onOpenOutfit={() => openOutfit(0)} />;
+  else if (tab === 'Saved') screen = <SavedScreen active={tab} onTab={handleTab} onOpenOutfit={openOutfit} />;
+  else screen = <YouScreen active={tab} onTab={handleTab} />;
+
+  return (
+    <IOSDevice>
+      <div style={{ position: 'relative', height: '100%' }}>
+        {screen}
+        {outfit !== null && <OutfitScreen look={outfit} onClose={() => setOutfit(null)} />}
+      </div>
+    </IOSDevice>
+  );
+}
+
+Object.assign(window, { SavedScreen, App });
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+
+</script>
+</body>
+</html>

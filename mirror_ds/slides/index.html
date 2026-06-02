@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mirror — Slide Template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Archivo:ital,wght@0,300..800;1,400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --font-display:"Newsreader","Georgia",serif;
+  --font-sans:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,monospace;
+  --paper:#F3F2EF; --ink:#0E0E0E; --white:#fff;
+  --slate-700:#3A3A38; --slate-500:#6B6B66; --slate-400:#8C8C86; --slate-300:#ABABA4;
+  --line:rgba(14,14,14,.14); --line-faint:rgba(14,14,14,.07);
+  --on-ink-soft:rgba(255,255,255,.66); --on-ink-line:rgba(255,255,255,.2);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#1c1c1b;height:100%}
+#stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#deck{width:1280px;height:720px;position:relative;background:var(--paper);box-shadow:0 30px 80px rgba(0,0,0,.5);transform-origin:center center}
+.slide{position:absolute;inset:0;display:none;flex-direction:column}
+.slide.active{display:flex}
+.grain{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(rgba(0,0,0,.10) .7px,transparent .7px);background-size:3.5px 3.5px;mix-blend-mode:multiply}
+.grain-light{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(rgba(255,255,255,.05) .7px,transparent .7px);background-size:3.5px 3.5px}
+
+/* shared bits */
+.kicker{font-family:var(--font-mono);font-size:15px;letter-spacing:.2em;text-transform:uppercase;color:var(--slate-400)}
+.kicker.light{color:var(--on-ink-soft)}
+.serif{font-family:var(--font-display);font-weight:500;letter-spacing:-.015em;line-height:1.0}
+.mono{font-family:var(--font-mono);text-transform:uppercase}
+.sans{font-family:var(--font-sans)}
+.foot{position:absolute;left:64px;right:64px;bottom:42px;display:flex;justify-content:space-between;align-items:center;font-family:var(--font-mono);font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate-400)}
+.foot.light{color:var(--on-ink-soft)}
+.wm{font-family:var(--font-display);font-weight:500;letter-spacing:.01em}
+
+/* nav */
+#nav{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:50;display:flex;gap:14px;align-items:center;background:rgba(14,14,14,.82);padding:9px 16px;border-radius:999px}
+#nav button{background:none;border:none;color:#fff;font-family:var(--font-mono);font-size:13px;cursor:pointer;padding:4px 8px;letter-spacing:.05em}
+#nav .count{color:rgba(255,255,255,.6);font-family:var(--font-mono);font-size:12px;letter-spacing:.1em;min-width:54px;text-align:center}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="deck">
+
+    <!-- 1 · TITLE (dark, full-bleed) -->
+    <section class="slide active" data-screen-label="01">
+      <div style="position:absolute;inset:0;background:radial-gradient(120% 100% at 72% 0%,#5a5a58,#1c1c1b 56%,#0a0a0a)"></div>
+      <div class="grain-light"></div>
+      <div style="position:relative;padding:64px 64px 0">
+        <div class="wm" style="font-size:30px;color:var(--paper)">Mirror</div>
+      </div>
+      <div style="position:relative;margin-top:auto;padding:0 64px 130px">
+        <div class="kicker light">SPRING / SUMMER 2026 · BRAND</div>
+        <div class="serif" style="font-size:104px;color:var(--paper);margin-top:24px">Get dressed,<br>decided.</div>
+        <div class="sans" style="font-size:21px;color:var(--on-ink-soft);margin-top:26px;max-width:620px;line-height:1.5">An AI wardrobe that learns what you actually wear — and hands you the morning's outfit before the coffee's poured.</div>
+      </div>
+      <div class="foot light"><span>MIRROR</span><span>01 / 06</span></div>
+    </section>
+
+    <!-- 2 · STATEMENT (light, big serif) -->
+    <section class="slide" data-screen-label="02">
+      <div style="padding:64px 64px 0"><div class="kicker">THE PROBLEM</div></div>
+      <div style="margin:auto 0;padding:0 64px">
+        <div class="serif" style="font-size:76px;max-width:1050px">You own eighty-four pieces.<br>You wear the same <span style="font-style:italic">eleven</span>.</div>
+        <div class="sans" style="font-size:20px;color:var(--slate-500);margin-top:30px;max-width:680px;line-height:1.55">Choice paralysis, not lack of clothes. The wardrobe is full; the decision is the friction.</div>
+      </div>
+      <div class="foot"><span>MIRROR</span><span>02 / 06</span></div>
+    </section>
+
+    <!-- 3 · BIG NUMBERS / STATS -->
+    <section class="slide" data-screen-label="03">
+      <div style="padding:64px 64px 0"><div class="kicker">WHY IT MATTERS</div></div>
+      <div style="margin:auto 0;padding:0 64px;display:grid;grid-template-columns:repeat(3,1fr);gap:0">
+        <div style="padding-right:48px;border-right:1px solid var(--line)">
+          <div class="serif" style="font-size:96px">17<span style="font-size:42px">min</span></div>
+          <div class="sans" style="font-size:17px;color:var(--slate-500);margin-top:14px;line-height:1.5">spent deciding what to wear, every morning.</div>
+        </div>
+        <div style="padding:0 48px;border-right:1px solid var(--line)">
+          <div class="serif" style="font-size:96px">73<span style="font-size:42px">%</span></div>
+          <div class="sans" style="font-size:17px;color:var(--slate-500);margin-top:14px;line-height:1.5">of a wardrobe goes unworn in a season.</div>
+        </div>
+        <div style="padding-left:48px">
+          <div class="serif" style="font-size:96px">11</div>
+          <div class="sans" style="font-size:17px;color:var(--slate-500);margin-top:14px;line-height:1.5">pieces carry the average week of outfits.</div>
+        </div>
+      </div>
+      <div class="foot"><span>MIRROR</span><span>03 / 06</span></div>
+    </section>
+
+    <!-- 4 · IMAGE + CAPTION (split) -->
+    <section class="slide" data-screen-label="04">
+      <div style="position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr">
+        <div style="padding:64px;display:flex;flex-direction:column">
+          <div class="kicker">THE PRODUCT</div>
+          <div class="serif" style="font-size:60px;margin-top:auto">One photo in.<br>A finished look out.</div>
+          <div class="sans" style="font-size:18px;color:var(--slate-500);margin-top:24px;max-width:440px;line-height:1.55">Snap each piece once. Mirror catalogues fabric, colour and cut, then composes outfits for the day's weather and your calendar.</div>
+          <div style="margin-top:30px"><span class="mono" style="font-size:13px;letter-spacing:.18em;border-bottom:1px solid var(--ink);padding-bottom:6px">SEE THE FLOW →</span></div>
+        </div>
+        <div style="position:relative;overflow:hidden;background:linear-gradient(155deg,#2c2c2a,#7e7d78 55%,#cbcac4);filter:grayscale(1) contrast(1.06)">
+          <div style="position:absolute;top:0;bottom:0;left:52%;width:1px;background:rgba(255,255,255,.14)"></div>
+          <div class="grain"></div>
+          <div style="position:absolute;left:28px;bottom:26px"><span class="mono" style="font-size:12px;letter-spacing:.14em;color:rgba(255,255,255,.9)">STYLED FOR 18° · OFFICE</span></div>
+        </div>
+      </div>
+      <div class="foot" style="right:auto;width:calc(50% - 64px)"><span>MIRROR</span><span>04 / 06</span></div>
+    </section>
+
+    <!-- 5 · COMPARISON -->
+    <section class="slide" data-screen-label="05">
+      <div style="padding:64px 64px 0"><div class="kicker">THE SHIFT</div></div>
+      <div style="margin:auto 0;padding:0 64px;display:grid;grid-template-columns:1fr 1fr;gap:56px">
+        <div>
+          <div class="mono" style="font-size:13px;letter-spacing:.16em;color:var(--slate-400)">WITHOUT MIRROR</div>
+          <div style="height:1px;background:var(--line);margin:18px 0 4px"></div>
+          <div style="display:flex;flex-direction:column">
+            <div class="serif" style="font-size:27px;padding:18px 0;border-bottom:1px solid var(--line-faint)">Stare at a full closet</div>
+            <div class="serif" style="font-size:27px;padding:18px 0;border-bottom:1px solid var(--line-faint)">Default to the same eleven</div>
+            <div class="serif" style="font-size:27px;padding:18px 0;border-bottom:1px solid var(--line-faint)">Forget what you own</div>
+          </div>
+        </div>
+        <div>
+          <div class="mono" style="font-size:13px;letter-spacing:.16em;color:var(--ink)">WITH MIRROR</div>
+          <div style="height:1.5px;background:var(--ink);margin:18px 0 4px"></div>
+          <div style="display:flex;flex-direction:column">
+            <div class="serif" style="font-size:27px;padding:18px 0;border-bottom:1px solid var(--line-faint)">Open to today's look</div>
+            <div class="serif" style="font-size:27px;padding:18px 0;border-bottom:1px solid var(--line-faint)">Rediscover the whole wardrobe</div>
+            <div class="serif" style="font-size:27px;padding:18px 0;border-bottom:1px solid var(--line-faint)">Dressed in under a minute</div>
+          </div>
+        </div>
+      </div>
+      <div class="foot"><span>MIRROR</span><span>05 / 06</span></div>
+    </section>
+
+    <!-- 6 · CLOSING (dark) -->
+    <section class="slide" data-screen-label="06">
+      <div style="position:absolute;inset:0;background:#0E0E0E"></div>
+      <div class="grain-light"></div>
+      <div style="position:relative;margin:auto 0;padding:0 64px">
+        <div class="serif" style="font-size:92px;color:var(--paper)">Your closet,<br>already decided.</div>
+        <div style="margin-top:42px;display:flex;gap:14px;align-items:center">
+          <span class="sans" style="font-weight:500;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink);background:var(--paper);padding:16px 26px">Start your closet</span>
+          <span class="mono" style="font-size:13px;letter-spacing:.16em;color:var(--on-ink-soft)">MIRROR.APP</span>
+        </div>
+      </div>
+      <div class="foot light"><span>MIRROR</span><span>06 / 06</span></div>
+    </section>
+
+  </div>
+</div>
+
+<div id="nav">
+  <button id="prev">←</button>
+  <span class="count" id="count">01 / 06</span>
+  <button id="next">→</button>
+</div>
+
+<script>
+const slides = [...document.querySelectorAll('.slide')];
+let i = 0;
+function show(n){
+  i = (n + slides.length) % slides.length;
+  slides.forEach((s,k)=>s.classList.toggle('active', k===i));
+  document.getElementById('count').textContent = String(i+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
+  try{ localStorage.setItem('mirror-deck-pos', i); }catch(e){}
+}
+document.getElementById('next').onclick = ()=>show(i+1);
+document.getElementById('prev').onclick = ()=>show(i-1);
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight'||e.key===' ') show(i+1);
+  if(e.key==='ArrowLeft') show(i-1);
+});
+function fit(){
+  const pad = 0;
+  const sx = (window.innerWidth-pad)/1280, sy=(window.innerHeight-pad)/720;
+  document.getElementById('deck').style.transform = 'scale('+Math.min(sx,sy)+')';
+}
+window.addEventListener('resize', fit); fit();
+let saved = 0; try{ saved = parseInt(localStorage.getItem('mirror-deck-pos')||'0',10)||0; }catch(e){}
+show(saved);
+</script>
+</body>
+</html>

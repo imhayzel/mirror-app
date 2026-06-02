@@ -1,17 +1,26 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Newsreader, Archivo, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
+const newsreader = Newsreader({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-display",
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
-const playfair = Playfair_Display({
+const archivo = Archivo({
   subsets: ["latin"],
-  variable: "--font-playfair",
-  weight: ["600", "700"],
+  variable: "--font-sans",
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
@@ -27,7 +36,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${playfair.variable} antialiased`}>
+      <body
+        className={`${newsreader.variable} ${archivo.variable} ${ibmPlexMono.variable} antialiased`}
+      >
         {children}
       </body>
     </html>

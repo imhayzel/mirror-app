@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mirror — Web App UI Kit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Archivo:ital,wght@0,300..800;1,400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --font-display:"Newsreader","Georgia",serif;
+  --font-sans:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,monospace;
+  --paper:#F3F2EF; --paper-2:#ECEBE7; --card:#FAFAF8; --white:#fff;
+  --ink:#0E0E0E; --ink-soft:#1A1A1A;
+  --slate-700:#3A3A38; --slate-500:#6B6B66; --slate-400:#8C8C86; --slate-300:#ABABA4; --slate-200:#C9C8C2; --slate-100:#DEDDD8;
+  --line:rgba(14,14,14,.12); --line-strong:rgba(14,14,14,.24); --line-faint:rgba(14,14,14,.06);
+  --fill-hover:rgba(14,14,14,.04); --fill-press:rgba(14,14,14,.08);
+  --positive:#2F7D5B; --critical:#B23A33;
+  --shadow-3:0 12px 32px rgba(14,14,14,0.10),0 2px 6px rgba(14,14,14,0.05);
+  --ease-out:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:#d9d8d3;font-family:var(--font-sans);color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:30px 20px;}
+.grain{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(rgba(0,0,0,.10) .6px,transparent .6px);background-size:3px 3px;mix-blend-mode:multiply}
+.noscroll::-webkit-scrollbar{width:0;height:0}
+.noscroll{scrollbar-width:none}
+button{font-family:inherit}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<!-- App bundled inline (generated from the .jsx sources in this folder). Edit sources, then rebundle. -->
+<script type="text/babel" data-presets="react">
+
+/* ============ browser-window.jsx ============ */
+
+/* BEGIN USAGE */
+// Chrome.jsx — Simplified Chrome browser window (dark theme, macOS)
+// No dependencies, no image assets. All inline styles + inline SVG.
+// Exports (to window): ChromeWindow, ChromeTabBar, ChromeToolbar, ChromeTab, ChromeTrafficLights
+//
+// Usage — wrap your page content in <ChromeWindow> to get the tab bar + URL bar:
+//
+//   <ChromeWindow width={1100} height={680} url="acme.design/pricing">
+//     ...your page content...
+//   </ChromeWindow>
+/* END USAGE */
+
+const CHROME_C = {
+  barBg: '#202124',
+  tabBg: '#35363a',
+  text: '#e8eaed',
+  dim: '#9aa0a6',
+  urlBg: '#282a2d',
+};
+
+function ChromeTrafficLights() {
+  return (
+    <div style={{ display: 'flex', gap: 8, padding: '0 14px' }}>
+      <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5f57' }} />
+      <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#febc2e' }} />
+      <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#28c840' }} />
+    </div>
+  );
+}
+
+// Single tab (active has curved scoops)
+function ChromeTab({ title = 'New Tab', active = false }) {
+  const curve = (flip) => (
+    <svg width="8" height="10" viewBox="0 0 8 10"
+      style={{ position: 'absolute', bottom: 0, [flip ? 'right' : 'left']: -8, transform: flip ? 'scaleX(-1)' : 'none' }}>
+      <path d="M0 10C2 9 6 8 8 0V10H0Z" fill={CHROME_C.tabBg}/>
+    </svg>
+  );
+  return (
+    <div style={{
+      position: 'relative', height: 34, alignSelf: 'flex-end',
+      padding: '0 12px', display: 'flex', alignItems: 'center', gap: 8,
+      background: active ? CHROME_C.tabBg : 'transparent',
+      borderRadius: '8px 8px 0 0', minWidth: 120, maxWidth: 220,
+      fontFamily: 'system-ui, sans-serif', fontSize: 12,
+      color: active ? CHROME_C.text : CHROME_C.dim,
+    }}>
+      {active && curve(false)}
+      {active && curve(true)}
+      <div style={{ width: 14, height: 14, borderRadius: '50%', background: '#5f6368', flexShrink: 0 }} />
+      <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</span>
+    </div>
+  );
+}
+
+function ChromeTabBar({ tabs = [{ title: 'New Tab' }], activeIndex = 0 }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', height: 44,
+      background: CHROME_C.barBg, paddingRight: 8,
+    }}>
+      <ChromeTrafficLights />
+      <div style={{ display: 'flex', alignItems: 'flex-end', height: '100%', paddingLeft: 4, flex: 1 }}>
+        {tabs.map((t, i) => <ChromeTab key={i} title={t.title} active={i === activeIndex} />)}
+      </div>
+    </div>
+  );
+}
+
+function ChromeToolbar({ url = 'example.com' }) {
+  const iconDot = (
+    <div style={{
+      width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <div style={{ width: 16, height: 16, borderRadius: '50%', background: CHROME_C.dim, opacity: 0.4 }} />
+    </div>
+  );
+  return (
+    <div style={{
+      height: 40, background: CHROME_C.tabBg,
+      display: 'flex', alignItems: 'center', gap: 4, padding: '0 8px',
+    }}>
+      {iconDot}
+      {/* url bar */}
+      <div style={{
+        flex: 1, height: 30, borderRadius: 15, background: CHROME_C.urlBg,
+        display: 'flex', alignItems: 'center', gap: 8, padding: '0 14px',
+        margin: '0 6px',
+      }}>
+        <div style={{ width: 12, height: 12, borderRadius: '50%', background: CHROME_C.dim, opacity: 0.4 }} />
+        <span style={{
+          flex: 1, color: CHROME_C.text, fontSize: 13,
+          fontFamily: 'system-ui, sans-serif',
+        }}>{url}</span>
+      </div>
+      {iconDot}
+    </div>
+  );
+}
+
+function ChromeWindow({
+  tabs = [{ title: 'New Tab' }], activeIndex = 0, url = 'example.com',
+  width = 900, height = 600, children,
+}) {
+  return (
+    <div style={{
+      width, height, borderRadius: 10, overflow: 'hidden',
+      boxShadow: '0 24px 80px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.1)',
+      display: 'flex', flexDirection: 'column', background: CHROME_C.tabBg,
+    }}>
+      <ChromeTabBar tabs={tabs} activeIndex={activeIndex} />
+      <ChromeToolbar url={url} />
+      <div style={{ flex: 1, background: '#fff', overflow: 'auto' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, {
+  ChromeWindow, ChromeTabBar, ChromeToolbar, ChromeTab, ChromeTrafficLights,
+});
+
+
+/* ============ web-ui.jsx ============ */
+/* web-ui.jsx — shared primitives for the Mirror web app */
+
+function WIcon({ name, size = 20, color = 'currentColor', stroke = 1.6, style = {} }) {
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    if (!ref.current || !window.lucide) return;
+    ref.current.innerHTML = `<i data-lucide="${name}"></i>`;
+    window.lucide.createIcons({ nameAttr: 'data-lucide', attrs: { width: size, height: size, stroke: color, 'stroke-width': stroke } });
+  }, [name, size, color, stroke]);
+  return <span ref={ref} style={{ display: 'inline-flex', width: size, height: size, alignItems: 'center', justifyContent: 'center', ...style }} />;
+}
+
+function WMono({ children, size = 12, track = 0.14, color = 'var(--ink)', style = {} }) {
+  return <span style={{ fontFamily: 'var(--font-mono)', fontSize: size, letterSpacing: `${track}em`, textTransform: 'uppercase', color, lineHeight: 1.2, ...style }}>{children}</span>;
+}
+function WKicker({ children, marker = false, color = 'var(--slate-400)', style = {} }) {
+  return <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color, ...style }}>{marker && <span style={{ marginRight: 8 }}>▸</span>}{children}</div>;
+}
+function WSerif({ children, size = 40, weight = 500, color = 'var(--ink)', italic = false, style = {} }) {
+  return <div style={{ fontFamily: 'var(--font-display)', fontWeight: weight, fontStyle: italic ? 'italic' : 'normal', fontSize: size, lineHeight: 1.02, letterSpacing: '-0.015em', color, ...style }}>{children}</div>;
+}
+
+function WButton({ children, variant = 'dark', onClick, full = false, style = {} }) {
+  const base = { fontFamily: 'var(--font-sans)', fontWeight: 500, fontSize: 12, letterSpacing: '0.22em', textTransform: 'uppercase', padding: '15px 26px', border: '1px solid transparent', cursor: 'pointer', width: full ? '100%' : 'auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10, transition: 'background .18s, transform .1s', userSelect: 'none' };
+  const v = {
+    dark: { background: 'var(--ink)', color: 'var(--paper)' },
+    light: { background: 'var(--white)', color: 'var(--ink)', borderColor: 'var(--line)' },
+    outline: { background: 'transparent', color: 'var(--ink)', borderColor: 'var(--ink)' },
+  }[variant];
+  const [p, setP] = React.useState(false);
+  return <button onClick={onClick} onPointerDown={() => setP(true)} onPointerUp={() => setP(false)} onPointerLeave={() => setP(false)} style={{ ...base, ...v, transform: p ? 'scale(0.99)' : 'none', ...style }}>{children}</button>;
+}
+
+function WPill({ children, active = false, muted = false, onClick }) {
+  const s = active ? { background: 'var(--ink)', color: 'var(--paper)', borderColor: 'var(--ink)' }
+    : muted ? { background: 'transparent', color: 'var(--slate-400)', borderColor: 'var(--line-strong)' }
+    : { background: 'transparent', color: 'var(--ink)', borderColor: 'var(--ink)' };
+  return <button onClick={onClick} style={{ fontFamily: 'var(--font-mono)', fontSize: 12.5, letterSpacing: '0.04em', border: '1px solid', borderRadius: 999, padding: '9px 18px', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all .18s', ...s }}>{children}</button>;
+}
+
+const WGRADS = [
+  'linear-gradient(155deg,#2c2c2a,#7e7d78 55%,#cbcac4)',
+  'linear-gradient(155deg,#1b1b1a,#525250,#9b9a95)',
+  'linear-gradient(150deg,#3a3a37,#86857f,#bdbcb6)',
+  'linear-gradient(160deg,#222221,#6d6c67,#a9a8a2)',
+  'linear-gradient(145deg,#45443f,#9a9994,#d2d1cb)',
+  'linear-gradient(165deg,#2f2f2c,#73726d)',
+];
+function WPlate({ idx = 0, fold = false, style = {}, children }) {
+  return <div style={{ position: 'relative', overflow: 'hidden', background: WGRADS[idx % WGRADS.length], filter: 'grayscale(1) contrast(1.06)', ...style }}>
+    {fold && <div style={{ position: 'absolute', top: 0, bottom: 0, left: '52%', width: 1, background: 'rgba(255,255,255,0.14)' }} />}
+    <div className="grain" />{children}
+  </div>;
+}
+
+function WGarment({ idx, cat, name, worn, onClick }) {
+  const [h, setH] = React.useState(false);
+  return <div onClick={onClick} onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)} style={{ cursor: 'pointer' }}>
+    <WPlate idx={idx} fold style={{ width: '100%', aspectRatio: 0.82, transition: 'opacity .2s', opacity: h ? 0.9 : 1 }} />
+    <div style={{ paddingTop: 11 }}>
+      <WMono size={9.5} track={0.14} color="var(--slate-400)">{cat}</WMono>
+      <WSerif size={21} style={{ marginTop: 4 }}>{name}</WSerif>
+      {worn !== undefined && <WMono size={9.5} track={0.1} color="var(--slate-300)" style={{ display: 'block', marginTop: 5 }}>WORN {worn}×</WMono>}
+    </div>
+  </div>;
+}
+
+// Left navigation rail
+function Sidebar({ active, onNav }) {
+  const nav = [['Today', 'sparkles'], ['Closet', 'shirt'], ['Planner', 'calendar'], ['Saved', 'heart']];
+  return (
+    <div style={{ width: 232, flexShrink: 0, borderRight: '1px solid var(--line)', background: 'var(--paper)', display: 'flex', flexDirection: 'column', padding: '30px 0' }}>
+      <div style={{ padding: '0 28px 26px' }}>
+        <WSerif size={28} style={{ letterSpacing: '0.01em' }}>Mirror</WSerif>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '0 16px' }}>
+        {nav.map(([label, icon]) => {
+          const on = active === label;
+          return (
+            <button key={label} onClick={() => onNav(label)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 12px', background: on ? 'var(--fill-press)' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background .15s' }}>
+              <WIcon name={icon} size={18} color={on ? 'var(--ink)' : 'var(--slate-500)'} />
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase', color: on ? 'var(--ink)' : 'var(--slate-500)' }}>{label}</span>
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ flex: 1 }} />
+      <div style={{ padding: '0 16px' }}>
+        <WButton variant="dark" full onClick={() => onNav('Add')} style={{ padding: '13px 18px' }}><WIcon name="plus" size={15} /> Add items</WButton>
+      </div>
+      <div style={{ padding: '22px 28px 0', display: 'flex', alignItems: 'center', gap: 11 }}>
+        <WPlate idx={5} style={{ width: 32, height: 32, borderRadius: 999 }} />
+        <div>
+          <div style={{ fontFamily: 'var(--font-sans)', fontSize: 13.5, color: 'var(--ink)' }}>Elise Tan</div>
+          <WMono size={8.5} track={0.12} color="var(--slate-400)">MINIMAL · NEUTRAL</WMono>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Page top bar inside main canvas
+function PageBar({ title, right }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '34px 44px 22px', borderBottom: '1px solid var(--line)' }}>
+      <WSerif size={34}>{title}</WSerif>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>{right}</div>
+    </div>
+  );
+}
+
+Object.assign(window, { WIcon, WMono, WKicker, WSerif, WButton, WPill, WPlate, WGRADS, WGarment, Sidebar, PageBar });
+
+
+/* ============ screen-today.jsx ============ */
+/* screen-today.jsx (web) — dashboard / daily look */
+
+const WEB_LOOKS = [
+  { statement: ['The camel coat,', 'finally.'], cap: 'STYLED FOR 18° · OFFICE', pieces: [['OUTERWEAR','Camel wool coat'],['KNITWEAR','Ivory ribbed crew'],['TROUSERS','Pleated wide-leg']] },
+  { statement: ['Sharp, with', 'a soft edge.'], cap: 'STYLED FOR 18° · DINNER', pieces: [['TAILORING','Charcoal blazer'],['KNITWEAR','Fine merino tee'],['DENIM','Straight indigo']] },
+  { statement: ['Quiet, and', 'all yours.'], cap: 'STYLED FOR 18° · WEEKEND', pieces: [['KNITWEAR','Oat oversized knit'],['TROUSERS','Cream wide trouser'],['OUTERWEAR','Grey trench']] },
+];
+const WEEK = [['MON','27',0,'Tailored'],['TUE','28',3,'Indigo'],['WED','29',1,'Camel',true],['THU','30',null,null],['FRI','31',null,null],['SAT','01',null,null],['SUN','02',null,null]];
+
+function WebToday({ look, onShuffle, onNav }) {
+  const L = WEB_LOOKS[look % WEB_LOOKS.length];
+  return (
+    <div>
+      <PageBar title="Today" right={<>
+        <WMono size={11} track={0.08} color="var(--slate-500)">WED · MAY 29 · 18° · MOSTLY CLEAR</WMono>
+        <WIcon name="search" size={19} color="var(--slate-500)" />
+      </>} />
+
+      {/* editorial hero split */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: 460 }}>
+        <div style={{ padding: '44px 44px 40px', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontFamily: 'var(--font-sans)', fontSize: 16, color: 'var(--slate-700)' }}>Good morning, Elise.</div>
+          <WKicker marker style={{ marginTop: 32 }}>TODAY'S LOOK</WKicker>
+          <WSerif size={56} style={{ marginTop: 14, letterSpacing: '-0.025em' }}>{L.statement[0]}<br />{L.statement[1]}</WSerif>
+
+          <div style={{ marginTop: 'auto', paddingTop: 36 }}>
+            <WKicker style={{ marginBottom: 6 }}>THE PIECES</WKicker>
+            {L.pieces.map((p, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '13px 0', borderBottom: '1px solid var(--line-faint)' }}>
+                <WSerif size={22}>{p[1]}</WSerif>
+                <WMono size={9.5} track={0.12} color="var(--slate-400)">{p[0]}</WMono>
+              </div>
+            ))}
+            <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+              <WButton variant="dark" onClick={() => onNav('Planner')}>Wear this today</WButton>
+              <WButton variant="outline" onClick={onShuffle}><WIcon name="shuffle" size={15} /> Shuffle</WButton>
+            </div>
+          </div>
+        </div>
+
+        {/* hero plate */}
+        <WPlate idx={look} style={{ minHeight: 460 }}>
+          <div style={{ position: 'absolute', left: 22, bottom: 20 }}>
+            <WMono size={10} track={0.14} color="rgba(255,255,255,0.92)">{L.cap}</WMono>
+          </div>
+        </WPlate>
+      </div>
+
+      {/* this week */}
+      <div style={{ borderTop: '1px solid var(--line)', padding: '30px 44px 48px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 20 }}>
+          <WKicker>THIS WEEK</WKicker>
+          <button onClick={() => onNav('Planner')} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><WMono size={10} track={0.12} color="var(--slate-500)">PLAN THE WEEK →</WMono></button>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 14 }}>
+          {WEEK.map(([d, n, idx, name, today], i) => (
+            <div key={i}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                <WMono size={9.5} track={0.1} color={today ? 'var(--ink)' : 'var(--slate-400)'}>{d}</WMono>
+                <WMono size={9.5} track={0.05} color="var(--slate-300)">{n}</WMono>
+              </div>
+              {idx !== null
+                ? <><WPlate idx={idx} fold style={{ width: '100%', aspectRatio: 0.8, outline: today ? '1.5px solid var(--ink)' : 'none', outlineOffset: 2 }} /><WSerif size={15} style={{ marginTop: 7 }}>{name}</WSerif></>
+                : <div style={{ width: '100%', aspectRatio: 0.8, border: '1px dashed var(--line-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><WMono size={9} track={0.1} color="var(--slate-300)">＋ PLAN</WMono></div>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { WebToday, WEB_LOOKS, WEEK });
+
+
+/* ============ screen-closet.jsx ============ */
+/* screen-closet.jsx (web) — wardrobe grid */
+
+const WEB_CLOSET = [
+  ['OUTERWEAR','Outerwear','Camel wool coat',22,0],['OUTERWEAR','Outerwear','Grey trench',5,3],
+  ['KNITWEAR','Knitwear','Ivory ribbed crew',9,4],['KNITWEAR','Knitwear','Oat oversized knit',11,5],
+  ['TAILORING','Tailoring','Charcoal blazer',17,1],['TAILORING','Tailoring','Black wide suit',3,2],
+  ['DENIM','Denim','Straight indigo',28,3],['DENIM','Denim','Washed wide leg',13,0],
+  ['TROUSERS','Trousers','Pleated wide-leg',14,2],['TROUSERS','Trousers','Cream trouser',8,4],
+  ['KNITWEAR','Knitwear','Fine merino tee',6,1],['OUTERWEAR','Outerwear','Quilted black',7,5],
+];
+const WEB_FILTERS = ['All', 'Outerwear', 'Knitwear', 'Tailoring', 'Denim', 'Trousers'];
+
+function WebCloset({ onNav }) {
+  const [f, setF] = React.useState('All');
+  const items = f === 'All' ? WEB_CLOSET : WEB_CLOSET.filter(i => i[1] === f);
+  return (
+    <div>
+      <PageBar title="Closet" right={<>
+        <WMono size={11} track={0.08} color="var(--slate-500)">84 PIECES · 11 ON ROTATION</WMono>
+        <WIcon name="search" size={19} color="var(--slate-500)" />
+      </>} />
+      <div style={{ display: 'flex', gap: 9, padding: '22px 44px 4px', flexWrap: 'wrap' }}>
+        {WEB_FILTERS.map(x => <WPill key={x} active={f === x} onClick={() => setF(x)}>{x}</WPill>)}
+      </div>
+      <div style={{ padding: '24px 44px 52px', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', columnGap: 22, rowGap: 36 }}>
+        {items.map((it, i) => <WGarment key={i} idx={it[4]} cat={it[0]} name={it[2]} worn={it[3]} onClick={() => onNav('Today')} />)}
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { WebCloset, WEB_CLOSET });
+
+
+/* ============ screen-planner.jsx ============ */
+/* screen-planner.jsx (web) — weekly outfit planner */
+
+const PLAN = [
+  ['MON', 'MAY 27', 0, 'Tailored grey', 'OFFICE'],
+  ['TUE', 'MAY 28', 3, 'Indigo, easy', 'WFH'],
+  ['WED', 'MAY 29', 1, 'The camel coat', 'OFFICE', true],
+  ['THU', 'MAY 30', null, null, null],
+  ['FRI', 'MAY 31', 4, 'All cream', 'DINNER'],
+  ['SAT', 'JUN 01', null, null, null],
+  ['SUN', 'JUN 02', null, null, null],
+];
+
+function WebPlanner({ onNav }) {
+  return (
+    <div>
+      <PageBar title="Planner" right={<>
+        <WMono size={11} track={0.08} color="var(--slate-500)">WEEK OF MAY 27 · 18–21°</WMono>
+        <WButton variant="outline" onClick={() => onNav('Today')} style={{ padding: '11px 18px' }}><WIcon name="sparkles" size={14} /> Auto-plan</WButton>
+      </>} />
+      <div style={{ padding: '30px 44px 52px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 16 }}>
+          {PLAN.map(([d, date, idx, name, occ, today], i) => (
+            <div key={i} style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ paddingBottom: 12, marginBottom: 14, borderBottom: today ? '1.5px solid var(--ink)' : '1px solid var(--line)' }}>
+                <WMono size={11} track={0.12} color={today ? 'var(--ink)' : 'var(--slate-500)'}>{d}</WMono>
+                <WMono size={9} track={0.06} color="var(--slate-300)" style={{ display: 'block', marginTop: 4 }}>{date}</WMono>
+              </div>
+              {idx !== null ? (
+                <div>
+                  <WPlate idx={idx} fold style={{ width: '100%', aspectRatio: 0.74, outline: today ? '1.5px solid var(--ink)' : 'none', outlineOffset: 2 }}>
+                    <div style={{ position: 'absolute', left: 8, bottom: 7 }}><WMono size={7.5} track={0.12} color="rgba(255,255,255,0.9)">{occ}</WMono></div>
+                  </WPlate>
+                  <WSerif size={16} style={{ marginTop: 9 }}>{name}</WSerif>
+                </div>
+              ) : (
+                <button onClick={() => onNav('Closet')} style={{ width: '100%', aspectRatio: 0.74, border: '1px dashed var(--line-strong)', background: 'transparent', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'background .15s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--fill-hover)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                  <WIcon name="plus" size={18} color="var(--slate-400)" />
+                  <WMono size={8.5} track={0.1} color="var(--slate-400)">PLAN</WMono>
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { WebPlanner, PLAN });
+
+
+/* ============ app.jsx ============ */
+/* app.jsx (web) — controller */
+
+function WebSaved({ onNav }) {
+  const fits = [[0,'Tuesday office','WORN MAY 21'],[1,'Dinner, sharp','WORN MAY 18'],[2,'Slow weekend','SAVED MAY 12'],[3,'Rain plan','SAVED MAY 09'],[4,'All cream','SAVED MAY 04'],[5,'Black on black','SAVED APR 28'],[0,'First warm day','SAVED APR 22'],[2,'Gallery opening','SAVED APR 15']];
+  return (
+    <div>
+      <PageBar title="Saved" right={<WMono size={11} track={0.08} color="var(--slate-500)">14 SAVED · 3 ON REPEAT</WMono>} />
+      <div style={{ padding: '26px 44px 52px', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', columnGap: 22, rowGap: 34 }}>
+        {fits.map(([idx, name, cap], i) => (
+          <div key={i} onClick={() => onNav('Today')} style={{ cursor: 'pointer' }}>
+            <WPlate idx={idx} style={{ width: '100%', aspectRatio: 0.84 }}>
+              <div style={{ position: 'absolute', left: 12, bottom: 10 }}><WMono size={8} track={0.12} color="rgba(255,255,255,0.88)">{cap}</WMono></div>
+            </WPlate>
+            <WSerif size={18} style={{ marginTop: 9 }}>{name}</WSerif>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AddModal({ onClose }) {
+  const [shots, setShots] = React.useState([]);
+  return (
+    <div style={{ position: 'absolute', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(14,14,14,0.55)' }} />
+      <div style={{ position: 'relative', width: 560, background: 'var(--paper)', boxShadow: 'var(--shadow-3, 0 24px 64px rgba(0,0,0,.3))', padding: '36px 40px 40px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <WKicker>ADD TO CLOSET</WKicker>
+            <WSerif size={38} style={{ marginTop: 12 }}>A few photos.<br />We'll handle the rest.</WSerif>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', marginTop: 4 }}><WIcon name="x" size={22} /></button>
+        </div>
+
+        <div onClick={() => setShots(s => [...s, s.length % 6])}
+          style={{ marginTop: 26, border: '1px dashed var(--line-strong)', minHeight: 180, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, cursor: 'pointer', padding: 20 }}>
+          {shots.length === 0 ? (
+            <><WIcon name="image" size={26} color="var(--slate-400)" /><WMono size={11} track={0.1} color="var(--slate-400)">DRAG PHOTOS HERE · OR CLICK TO ADD</WMono></>
+          ) : (
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {shots.map((idx, i) => <WPlate key={i} idx={idx} fold style={{ width: 64, height: 82 }} />)}
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24 }}>
+          <WMono size={10} track={0.1} color="var(--slate-400)">{shots.length} {shots.length === 1 ? 'ITEM' : 'ITEMS'}</WMono>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <WButton variant="light" onClick={onClose}>Cancel</WButton>
+            <WButton variant="dark" onClick={onClose}>Add {shots.length || ''} {shots.length ? (shots.length === 1 ? 'item' : 'items') : 'items'}</WButton>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WebApp() {
+  const [active, setActive] = React.useState('Today');
+  const [look, setLook] = React.useState(0);
+  const [add, setAdd] = React.useState(false);
+  const nav = (t) => { if (t === 'Add') { setAdd(true); return; } setActive(t); };
+
+  let screen;
+  if (active === 'Today') screen = <WebToday look={look} onShuffle={() => setLook(l => (l + 1) % 3)} onNav={nav} />;
+  else if (active === 'Closet') screen = <WebCloset onNav={nav} />;
+  else if (active === 'Planner') screen = <WebPlanner onNav={nav} />;
+  else screen = <WebSaved onNav={nav} />;
+
+  return (
+    <ChromeWindow width={1240} height={780} url="mirror.app" tabs={[{ title: 'Mirror — Today' }]}>
+      <div style={{ display: 'flex', height: '100%', background: 'var(--paper)', position: 'relative' }}>
+        <Sidebar active={active} onNav={nav} />
+        <div className="noscroll" style={{ flex: 1, overflowY: 'auto', background: 'var(--paper)' }}>{screen}</div>
+        {add && <AddModal onClose={() => setAdd(false)} />}
+      </div>
+    </ChromeWindow>
+  );
+}
+
+Object.assign(window, { WebApp, WebSaved, AddModal });
+ReactDOM.createRoot(document.getElementById('root')).render(<WebApp />);
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,439 @@
+"use client";
+
+import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import BottomNav from "@/components/BottomNav";
+
+// ─── placeholder outfit data ──────────────────────────────────────────────────
+
+const OUTFIT_NAME = "The quiet confidence.";
+
+const PIECES = [
+  { type: "OUTERWEAR", name: "Camel wool coat" },
+  { type: "KNITWEAR",  name: "Ivory ribbed crew" },
+  { type: "TROUSERS",  name: "Pleated wide-leg" },
+] as const;
+
+const REASONING =
+  "A considered combination built around restraint. The ivory crew reads effortless against the charcoal weight below — clean contrast, no aggression. This works for a day that could go either way.";
+
+const TILE_GRADS = [
+  "linear-gradient(158deg,#3a3a38 0%,#8c8b85 50%,#c8c7c0 100%)",
+  "linear-gradient(148deg,#2a2a28 0%,#6a6a65 48%,#aeada7 100%)",
+  "linear-gradient(162deg,#1e1e1c 0%,#57564f 46%,#9e9d97 100%)",
+];
+
+// ─── style constants ──────────────────────────────────────────────────────────
+
+const MONO: React.CSSProperties = {
+  fontFamily: "var(--font-mono), 'SFMono-Regular', monospace",
+};
+const SERIF: React.CSSProperties = {
+  fontFamily: "var(--font-display), Georgia, serif",
+};
+const SANS: React.CSSProperties = {
+  fontFamily: "var(--font-sans), 'Helvetica Neue', Arial, sans-serif",
+};
+
+// ─── OutfitPage ───────────────────────────────────────────────────────────────
+
+export default function OutfitPage() {
+  const router = useRouter();
+  const [saving, setSaving] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleWearingThis = useCallback(async () => {
+    if (saving || confirmed) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const { error: sbError } = await supabase
+        .from("outfit_suggestions")
+        .insert({
+          user_id: "demo-user",
+          items: PIECES.map((p) => p.name),
+          reasoning: REASONING,
+          worn: true,
+        });
+      if (sbError) throw sbError;
+      setConfirmed(true);
+    } catch {
+      setError("Couldn't save. Try again.");
+    } finally {
+      setSaving(false);
+    }
+  }, [saving, confirmed]);
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#0E0E0E",
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 390,
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          background: "#0E0E0E",
+        }}
+      >
+        {/* ── Status bar ── */}
+        <div
+          style={{
+            height: 44,
+            padding: "0 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexShrink: 0,
+          }}
+        >
+          <span
+            style={{
+              ...MONO,
+              fontSize: 12,
+              fontWeight: 500,
+              letterSpacing: "0.08em",
+              color: "rgba(255,255,255,0.6)",
+            }}
+          >
+            9:41
+          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <svg width="16" height="11" viewBox="0 0 16 11" aria-hidden="true">
+              <rect x="0" y="7" width="3" height="4" fill="rgba(255,255,255,0.65)" />
+              <rect x="4.3" y="4.5" width="3" height="6.5" fill="rgba(255,255,255,0.65)" />
+              <rect x="8.6" y="2" width="3" height="9" fill="rgba(255,255,255,0.65)" />
+              <rect x="12.9" y="0" width="3" height="11" fill="rgba(255,255,255,0.65)" />
+            </svg>
+            <svg width="25" height="12" viewBox="0 0 25 12" aria-hidden="true">
+              <rect x="0.5" y="0.5" width="21" height="11" stroke="rgba(255,255,255,0.65)" strokeWidth="1" fill="none" />
+              <rect x="2" y="2" width="16" height="8" fill="rgba(255,255,255,0.65)" />
+              <line x1="23" y1="4.5" x2="23" y2="7.5" stroke="rgba(255,255,255,0.65)" strokeWidth="2" strokeLinecap="square" />
+            </svg>
+          </div>
+        </div>
+
+        {/* ── Top bar ── */}
+        <header
+          style={{
+            height: 52,
+            padding: "0 20px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexShrink: 0,
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          {/* back */}
+          <button
+            onClick={() => router.push("/")}
+            aria-label="Back"
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="rgba(255,255,255,0.6)"
+              strokeWidth="1.5"
+              strokeLinecap="square"
+              aria-hidden="true"
+            >
+              <polyline points="13,4 7,10 13,16" />
+            </svg>
+          </button>
+
+          {/* kicker */}
+          <span
+            style={{
+              ...MONO,
+              fontSize: 9,
+              fontWeight: 500,
+              letterSpacing: "0.18em",
+              color: "rgba(255,255,255,0.45)",
+              textTransform: "uppercase",
+            }}
+          >
+            TODAY&apos;S LOOK
+          </span>
+
+          {/* ⋯ more */}
+          <button
+            aria-label="More options"
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: "4px 2px",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <svg width="20" height="4" viewBox="0 0 20 4" fill="rgba(255,255,255,0.6)" aria-hidden="true">
+              <circle cx="2"  cy="2" r="1.5" />
+              <circle cx="10" cy="2" r="1.5" />
+              <circle cx="18" cy="2" r="1.5" />
+            </svg>
+          </button>
+        </header>
+
+        {/* ── Scrollable body ── */}
+        <main style={{ flex: 1, overflowY: "auto", paddingBottom: 80 }}>
+
+          {/* outfit name */}
+          <div style={{ padding: "28px 20px 0" }}>
+            <p
+              style={{
+                ...SERIF,
+                fontSize: 40,
+                fontWeight: 500,
+                fontStyle: "italic",
+                lineHeight: 1.05,
+                letterSpacing: "-0.02em",
+                color: "#FFFFFF",
+                margin: 0,
+              }}
+            >
+              {OUTFIT_NAME}
+            </p>
+          </div>
+
+          {/* ── flat lay tile grid ──────────────────────────── */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr 1fr",
+              columnGap: 8,
+              padding: "24px 20px 0",
+            }}
+          >
+            {PIECES.map((piece, i) => (
+              <div key={i}>
+                {/* image plate */}
+                <div
+                  style={{
+                    width: "100%",
+                    aspectRatio: "0.75",
+                    background: TILE_GRADS[i],
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
+                  {/* fabric fold line */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      bottom: 0,
+                      left: "54%",
+                      width: 1,
+                      background: "rgba(255,255,255,0.1)",
+                    }}
+                  />
+                </div>
+                {/* metadata */}
+                <div style={{ paddingTop: 8 }}>
+                  <span
+                    style={{
+                      ...MONO,
+                      fontSize: 8,
+                      letterSpacing: "0.14em",
+                      color: "rgba(255,255,255,0.38)",
+                      textTransform: "uppercase",
+                      display: "block",
+                    }}
+                  >
+                    {piece.type}
+                  </span>
+                  <p
+                    style={{
+                      ...SERIF,
+                      fontSize: 13,
+                      fontWeight: 500,
+                      lineHeight: 1.15,
+                      letterSpacing: "-0.005em",
+                      color: "rgba(255,255,255,0.9)",
+                      margin: "3px 0 0",
+                    }}
+                  >
+                    {piece.name}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ── styling note ────────────────────────────────── */}
+          <div style={{ padding: "28px 20px 0" }}>
+            <div style={{ height: 1, background: "rgba(255,255,255,0.08)", marginBottom: 20 }} />
+            <p
+              style={{
+                ...SERIF,
+                fontSize: 19,
+                fontWeight: 400,
+                fontStyle: "italic",
+                lineHeight: 1.45,
+                letterSpacing: "-0.005em",
+                color: "rgba(255,255,255,0.72)",
+                margin: 0,
+              }}
+            >
+              &ldquo;{REASONING}&rdquo;
+            </p>
+          </div>
+
+          {/* ── action area ─────────────────────────────────── */}
+          <div style={{ padding: "28px 20px 0" }}>
+            <div style={{ height: 1, background: "rgba(255,255,255,0.08)", marginBottom: 24 }} />
+
+            {confirmed ? (
+              /* confirmation state */
+              <div
+                style={{
+                  height: 56,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  border: "1px solid rgba(255,255,255,0.16)",
+                }}
+              >
+                <span
+                  style={{
+                    ...MONO,
+                    fontSize: 13,
+                    fontWeight: 500,
+                    letterSpacing: "0.18em",
+                    color: "#2F7D5B",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Noted.
+                </span>
+              </div>
+            ) : (
+              /* primary CTA */
+              <button
+                type="button"
+                onClick={handleWearingThis}
+                disabled={saving}
+                style={{
+                  ...SANS,
+                  width: "100%",
+                  height: 56,
+                  background: saving ? "rgba(255,255,255,0.55)" : "#FFFFFF",
+                  color: "#0E0E0E",
+                  border: "none",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  letterSpacing: "0.22em",
+                  textTransform: "uppercase",
+                  cursor: saving ? "default" : "pointer",
+                  transition: "background 0.18s cubic-bezier(0.22,1,0.36,1)",
+                }}
+              >
+                {saving ? "SAVING…" : "WEARING THIS"}
+              </button>
+            )}
+
+            {/* error */}
+            {error && (
+              <p
+                style={{
+                  ...MONO,
+                  fontSize: 10,
+                  color: "#B23A33",
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  marginTop: 10,
+                  marginBottom: 0,
+                }}
+              >
+                {error}
+              </p>
+            )}
+
+            {/* subtitle */}
+            <p
+              style={{
+                ...MONO,
+                fontSize: 10,
+                letterSpacing: "0.1em",
+                color: "rgba(255,255,255,0.3)",
+                textTransform: "uppercase",
+                textAlign: "center",
+                margin: "14px 0 16px",
+                lineHeight: 1.5,
+              }}
+            >
+              Each outfit you confirm helps Mirror dress you better.
+            </p>
+
+            {/* shuffle */}
+            <button
+              type="button"
+              onClick={() => router.refresh()}
+              style={{
+                ...SANS,
+                width: "100%",
+                height: 52,
+                background: "transparent",
+                color: "rgba(255,255,255,0.7)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                fontSize: 13,
+                fontWeight: 500,
+                letterSpacing: "0.22em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+                transition: "border-color 0.18s cubic-bezier(0.22,1,0.36,1)",
+              }}
+            >
+              {/* shuffle icon */}
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                stroke="rgba(255,255,255,0.7)"
+                strokeWidth="1.5"
+                strokeLinecap="square"
+                aria-hidden="true"
+              >
+                <polyline points="10,1 13,4 10,7" />
+                <path d="M1 4h8a4 4 0 0 1 4 4" />
+                <polyline points="4,13 1,10 4,7" />
+                <path d="M13 10H5a4 4 0 0 1-4-4" />
+              </svg>
+              SHUFFLE
+            </button>
+
+            <div style={{ height: 20 }} />
+          </div>
+        </main>
+
+        <BottomNav dark />
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,157 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Archivo:ital,wght@0,300..800;1,400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style id="__tokens">
+:root {
+  /* ---------- TYPE FAMILIES ---------- */
+  --font-display: "Newsreader", "Georgia", "Times New Roman", serif; /* high-contrast editorial serif */
+  --font-sans: "Archivo", "Helvetica Neue", Arial, sans-serif;       /* grotesque — UI + bold headlines */
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", ui-monospace, monospace; /* utility labels, metadata, nav */
+
+  /* ---------- COLOR · CORE ---------- */
+  --paper:      #F3F2EF; /* primary surface — off-white, slightly cool */
+  --paper-2:    #ECEBE7; /* recessed / alt section */
+  --card:       #FAFAF8; /* raised card surface */
+  --white:      #FFFFFF;
+  --ink:        #0E0E0E; /* near-black — primary text, fashion black blocks */
+  --ink-soft:   #1A1A1A;
+
+  /* ---------- COLOR · NEUTRAL SCALE (cool slate) ---------- */
+  --slate-900:  #161616;
+  --slate-700:  #3A3A38;
+  --slate-500:  #6B6B66; /* secondary text */
+  --slate-400:  #8C8C86;
+  --slate-300:  #ABABA4; /* tertiary text, placeholder */
+  --slate-200:  #C9C8C2;
+  --slate-100:  #DEDDD8;
+
+  /* ---------- COLOR · LINES & FILLS ---------- */
+  --line:        rgba(14, 14, 14, 0.12);  /* hairline borders */
+  --line-strong: rgba(14, 14, 14, 0.24);
+  --line-faint:  rgba(14, 14, 14, 0.06);
+  --fill-hover:  rgba(14, 14, 14, 0.04);   /* subtle hover wash on light */
+  --fill-press:  rgba(14, 14, 14, 0.08);
+  --on-ink-line: rgba(255, 255, 255, 0.18);
+  --on-ink-soft: rgba(255, 255, 255, 0.64);
+
+  /* ---------- COLOR · SEMANTIC (muted, used sparingly) ---------- */
+  --positive:  #2F7D5B; /* muted forest — confirmations */
+  --critical:  #B23A33; /* muted brick — destructive / errors */
+  --info:      var(--ink);
+
+  /* ---------- TYPE · SEMANTIC ROLES ---------- */
+  /* Display serif — editorial statements */
+  --display-size: clamp(48px, 7vw, 96px);
+  --display-line: 0.96;
+  --display-weight: 500;
+  --display-spacing: -0.015em;
+
+  --h1-size: clamp(36px, 4.5vw, 60px);
+  --h1-line: 1.02;
+  --h1-weight: 500;
+  --h1-spacing: -0.01em;
+
+  --h2-size: clamp(26px, 3vw, 38px);
+  --h2-line: 1.08;
+  --h2-weight: 500;
+
+  /* Grotesque headline — JUUN.J style big uppercase */
+  --display-sans-size: clamp(44px, 8vw, 120px);
+  --display-sans-weight: 700;
+  --display-sans-spacing: -0.02em;
+
+  /* Section / card titles (sans) */
+  --title-size: 20px;
+  --title-weight: 600;
+  --title-spacing: -0.005em;
+
+  /* Body (sans) */
+  --body-size: 17px;
+  --body-line: 1.5;
+  --body-weight: 400;
+
+  --body-sm-size: 14px;
+  --body-sm-line: 1.45;
+
+  /* Mono utility label — UPPERCASE kicker / metadata / nav */
+  --label-size: 12px;
+  --label-weight: 500;
+  --label-spacing: 0.14em;
+  --label-line: 1.2;
+
+  --caption-size: 11px;
+  --caption-spacing: 0.04em;
+
+  /* ---------- SPACING (4px base) ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+  --space-10: 128px;
+
+  /* ---------- RADII (minimal — editorial favors sharp) ---------- */
+  --radius-0: 0px;     /* default: crisp corners, fashion blocks */
+  --radius-1: 2px;     /* inputs, subtle softening */
+  --radius-2: 4px;
+  --radius-pill: 999px;/* tags / toggle thumbs only */
+
+  /* ---------- ELEVATION (whisper-soft, cool) ---------- */
+  --shadow-0: none;
+  --shadow-1: 0 1px 2px rgba(14,14,14,0.05);
+  --shadow-2: 0 2px 8px rgba(14,14,14,0.06), 0 1px 2px rgba(14,14,14,0.04);
+  --shadow-3: 0 12px 32px rgba(14,14,14,0.10), 0 2px 6px rgba(14,14,14,0.05);
+  --shadow-sheet: 0 -8px 40px rgba(14,14,14,0.12);
+
+  /* ---------- MOTION ---------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);   /* primary — calm settle */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 140ms;
+  --dur: 240ms;
+  --dur-slow: 420ms;
+
+  /* ---------- LAYOUT ---------- */
+  --maxw: 1200px;
+  --gutter: clamp(20px, 5vw, 80px);
+}
+
+/* ============================================================
+   SEMANTIC ELEMENT DEFAULTS
+   Apply by importing this file and using the classes/elements.
+   ============================================================ */
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--body-size);
+  line-height: var(--body-line);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.display { font-family: var(--font-display); font-size: var(--display-size); line-height: var(--display-line); font-weight: var(--display-weight); letter-spacing: var(--display-spacing); }
+.h1 { font-family: var(--font-display); font-size: var(--h1-size); line-height: var(--h1-line); font-weight: var(--h1-weight); letter-spacing: var(--h1-spacing); }
+.h2 { font-family: var(--font-display); font-size: var(--h2-size); line-height: var(--h2-line); font-weight: var(--h2-weight); }
+.display-sans { font-family: var(--font-sans); font-size: var(--display-sans-size); font-weight: var(--display-sans-weight); letter-spacing: var(--display-sans-spacing); line-height: 0.92; text-transform: uppercase; }
+.title { font-family: var(--font-sans); font-size: var(--title-size); font-weight: var(--title-weight); letter-spacing: var(--title-spacing); }
+.body { font-family: var(--font-sans); font-size: var(--body-size); line-height: var(--body-line); }
+.body-sm { font-family: var(--font-sans); font-size: var(--body-sm-size); line-height: var(--body-sm-line); }
+.label { font-family: var(--font-mono); font-size: var(--label-size); font-weight: var(--label-weight); letter-spacing: var(--label-spacing); text-transform: uppercase; line-height: var(--label-line); }
+.caption { font-family: var(--font-mono); font-size: var(--caption-size); letter-spacing: var(--caption-spacing); color: var(--slate-500); }
+
+a { color: inherit; }
+::selection { background: var(--ink); color: var(--paper); }
+
+</style>
+<style>html,body{margin:0;padding:0}*{box-sizing:border-box}
+.wrap{width:100%;min-height:100vh;background:var(--paper);padding:30px 34px;}
+.kick{font-family:var(--font-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--slate-400);}
+.mono{font-family:var(--font-mono)}
+.serif{font-family:var(--font-display)}
+.box{background:var(--ink);padding:34px 36px;display:flex;align-items:center;gap:36px}.mark{font-family:var(--font-display);font-weight:500;font-size:52px;color:var(--paper);line-height:1}.r{font-family:var(--font-mono);font-size:11px;letter-spacing:.2em;color:var(--on-ink-soft);text-transform:uppercase}</style></head><body><div class="wrap"><div class="kick" style="margin-bottom:16px">On dark · reversed</div>
+<div class="box"><div class="mark">Mirror</div><div class="r">Get dressed,<br>decided.</div></div></div></body></html>

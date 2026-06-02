@@ -1,0 +1,536 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import BottomNav from "@/components/BottomNav";
+
+// ─── style constants ──────────────────────────────────────────────────────────
+
+const MONO: React.CSSProperties = {
+  fontFamily: "var(--font-mono), 'SFMono-Regular', monospace",
+};
+const SERIF: React.CSSProperties = {
+  fontFamily: "var(--font-display), Georgia, serif",
+};
+const SANS: React.CSSProperties = {
+  fontFamily: "var(--font-sans), 'Helvetica Neue', Arial, sans-serif",
+};
+
+// ─── placeholder data ─────────────────────────────────────────────────────────
+
+const PALETTE = [
+  { hex: "#0E0E0E", name: "COAL" },
+  { hex: "#3A3A38", name: "GRAPHITE" },
+  { hex: "#C2B89A", name: "ECRU" },
+  { hex: "#8C8876", name: "STONE" },
+  { hex: "#DEDDD8", name: "ASH" },
+];
+
+const OCCASIONS = ["CASUAL", "WORK", "WEEKEND"];
+const SETTINGS_ROWS = ["Account", "Notifications", "About Mirror"];
+
+// ─── types ────────────────────────────────────────────────────────────────────
+
+type Stats = {
+  pieces: number;
+  outfits: number;
+  confirmed: number;
+};
+
+// ─── SettingsRow ──────────────────────────────────────────────────────────────
+
+function SettingsRow({ label, isLast }: { label: string; isLast?: boolean }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <button
+      type="button"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width: "100%",
+        minHeight: 56,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "0 24px",
+        background: hovered ? "rgba(14,14,14,0.04)" : "transparent",
+        border: "none",
+        borderBottom: isLast ? "none" : "1px solid rgba(14,14,14,0.08)",
+        cursor: "pointer",
+        transition: "background 0.14s cubic-bezier(0.22,1,0.36,1)",
+        textAlign: "left",
+      }}
+    >
+      <span
+        style={{
+          ...MONO,
+          fontSize: 11,
+          fontWeight: 500,
+          letterSpacing: "0.16em",
+          textTransform: "uppercase",
+          color: "#0E0E0E",
+        }}
+      >
+        {label}
+      </span>
+      <span
+        style={{
+          ...MONO,
+          fontSize: 13,
+          color: "#8C8C86",
+          flexShrink: 0,
+          marginLeft: 12,
+        }}
+      >
+        →
+      </span>
+    </button>
+  );
+}
+
+// ─── OccasionRow ─────────────────────────────────────────────────────────────
+
+function OccasionRow({ label }: { label: string }) {
+  return (
+    <div
+      style={{
+        padding: "18px 24px",
+        borderTop: "1px solid rgba(14,14,14,0.08)",
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
+      <span
+        style={{
+          ...MONO,
+          fontSize: 11,
+          fontWeight: 500,
+          letterSpacing: "0.18em",
+          color: "#0E0E0E",
+          textTransform: "uppercase",
+        }}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
+// ─── YouPage ──────────────────────────────────────────────────────────────────
+
+export default function YouPage() {
+  const [stats, setStats] = useState<Stats>({ pieces: 0, outfits: 0, confirmed: 0 });
+
+  useEffect(() => {
+    async function fetchStats() {
+      const [piecesRes, outfitsRes, confirmedRes] = await Promise.all([
+        supabase
+          .from("wardrobe_items")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", "demo-user"),
+        supabase
+          .from("outfit_suggestions")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", "demo-user"),
+        supabase
+          .from("outfit_suggestions")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", "demo-user")
+          .eq("worn", true),
+      ]);
+      setStats({
+        pieces: piecesRes.count ?? 0,
+        outfits: outfitsRes.count ?? 0,
+        confirmed: confirmedRes.count ?? 0,
+      });
+    }
+    fetchStats();
+  }, []);
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#F3F2EF",
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 390,
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          background: "#F3F2EF",
+        }}
+      >
+
+        {/* ── Status bar ─────────────────────────────────────── */}
+        <div
+          style={{
+            height: 44,
+            padding: "0 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexShrink: 0,
+          }}
+        >
+          <span style={{ ...MONO, fontSize: 12, fontWeight: 500, letterSpacing: "0.08em", color: "#0E0E0E" }}>
+            9:41
+          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <svg width="16" height="11" viewBox="0 0 16 11" aria-hidden="true">
+              <rect x="0" y="7" width="3" height="4" fill="#0E0E0E" />
+              <rect x="4.3" y="4.5" width="3" height="6.5" fill="#0E0E0E" />
+              <rect x="8.6" y="2" width="3" height="9" fill="#0E0E0E" />
+              <rect x="12.9" y="0" width="3" height="11" fill="#0E0E0E" />
+            </svg>
+            <svg width="25" height="12" viewBox="0 0 25 12" aria-hidden="true">
+              <rect x="0.5" y="0.5" width="21" height="11" stroke="#0E0E0E" strokeWidth="1" fill="none" />
+              <rect x="2" y="2" width="16" height="8" fill="#0E0E0E" />
+              <line x1="23" y1="4.5" x2="23" y2="7.5" stroke="#0E0E0E" strokeWidth="2" strokeLinecap="square" />
+            </svg>
+          </div>
+        </div>
+
+        {/* ── Top bar ────────────────────────────────────────── */}
+        <header
+          style={{
+            height: 52,
+            padding: "0 24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexShrink: 0,
+            borderBottom: "1px solid rgba(14,14,14,0.12)",
+          }}
+        >
+          <span
+            style={{
+              ...SERIF,
+              fontSize: 28,
+              fontWeight: 500,
+              fontStyle: "italic",
+              letterSpacing: "-0.01em",
+              color: "#0E0E0E",
+              lineHeight: 1,
+            }}
+          >
+            You.
+          </span>
+
+          {/* Lucide-style settings gear */}
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#0E0E0E"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-label="Settings"
+            style={{ cursor: "pointer", flexShrink: 0 }}
+          >
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </header>
+
+        {/* ── Scrollable body ─────────────────────────────────── */}
+        <main style={{ flex: 1, overflowY: "auto", paddingBottom: 80 }}>
+
+          {/* ══ STYLE PROFILE CARD ════════════════════════════════ */}
+          <div
+            style={{
+              background: "#0E0E0E",
+              padding: "28px 24px 36px",
+            }}
+          >
+            {/* kicker */}
+            <span
+              style={{
+                ...MONO,
+                fontSize: 9,
+                fontWeight: 500,
+                letterSpacing: "0.20em",
+                color: "rgba(255,255,255,0.36)",
+                textTransform: "uppercase",
+                display: "block",
+                marginBottom: 16,
+              }}
+            >
+              YOUR STYLE
+            </span>
+
+            {/* archetype headline */}
+            <p
+              style={{
+                ...SERIF,
+                fontSize: 42,
+                fontWeight: 400,
+                fontStyle: "italic",
+                lineHeight: 1.06,
+                letterSpacing: "-0.02em",
+                color: "#FFFFFF",
+                margin: "0 0 28px",
+              }}
+            >
+              The Quiet Minimalist.
+            </p>
+
+            {/* descriptor tags */}
+            <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0 }}>
+              {["EFFORTLESS", "CONSIDERED", "UNDERSTATED"].map((tag, i, arr) => (
+                <span key={tag} style={{ display: "flex", alignItems: "center" }}>
+                  <span
+                    style={{
+                      ...MONO,
+                      fontSize: 10,
+                      fontWeight: 500,
+                      letterSpacing: "0.16em",
+                      color: "rgba(255,255,255,0.55)",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {tag}
+                  </span>
+                  {i < arr.length - 1 && (
+                    <span
+                      style={{
+                        ...MONO,
+                        fontSize: 10,
+                        color: "rgba(255,255,255,0.20)",
+                        margin: "0 10px",
+                      }}
+                    >
+                      ·
+                    </span>
+                  )}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* ══ WARDROBE STATS ════════════════════════════════════ */}
+          <div
+            style={{
+              background: "#F3F2EF",
+              borderTop: "1px solid rgba(14,14,14,0.0)",
+              padding: "28px 24px 32px",
+            }}
+          >
+            {/* kicker */}
+            <span
+              style={{
+                ...MONO,
+                fontSize: 9,
+                fontWeight: 500,
+                letterSpacing: "0.20em",
+                color: "#8C8C86",
+                textTransform: "uppercase",
+                display: "block",
+                marginBottom: 24,
+              }}
+            >
+              BY THE NUMBERS
+            </span>
+
+            {/* stats row */}
+            <div style={{ display: "flex", alignItems: "flex-end" }}>
+              {[
+                { value: stats.pieces, label: "PIECES" },
+                { value: stats.outfits, label: "OUTFITS" },
+                { value: stats.confirmed, label: "CONFIRMED" },
+              ].map(({ value, label }, i) => (
+                <div
+                  key={label}
+                  style={{
+                    flex: 1,
+                    paddingLeft: i > 0 ? 20 : 0,
+                    paddingRight: i < 2 ? 20 : 0,
+                    borderLeft: i > 0 ? "1px solid rgba(14,14,14,0.10)" : "none",
+                  }}
+                >
+                  <span
+                    style={{
+                      ...SERIF,
+                      fontSize: 48,
+                      fontWeight: 400,
+                      letterSpacing: "-0.03em",
+                      lineHeight: 1,
+                      color: "#0E0E0E",
+                      display: "block",
+                      marginBottom: 8,
+                    }}
+                  >
+                    {value}
+                  </span>
+                  <span
+                    style={{
+                      ...MONO,
+                      fontSize: 8,
+                      fontWeight: 500,
+                      letterSpacing: "0.14em",
+                      color: "#8C8C86",
+                      textTransform: "uppercase",
+                      display: "block",
+                    }}
+                  >
+                    {label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ══ DOMINANT COLOURS ══════════════════════════════════ */}
+          <div
+            style={{
+              borderTop: "1px solid rgba(14,14,14,0.10)",
+              padding: "28px 24px 32px",
+              background: "#F3F2EF",
+            }}
+          >
+            {/* kicker */}
+            <span
+              style={{
+                ...MONO,
+                fontSize: 9,
+                fontWeight: 500,
+                letterSpacing: "0.20em",
+                color: "#8C8C86",
+                textTransform: "uppercase",
+                display: "block",
+                marginBottom: 20,
+              }}
+            >
+              YOUR PALETTE
+            </span>
+
+            {/* swatches */}
+            <div style={{ display: "flex", gap: 16, flexWrap: "nowrap" }}>
+              {PALETTE.map(({ hex, name }) => (
+                <div
+                  key={hex}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    gap: 8,
+                    flex: 1,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 40,
+                      height: 40,
+                      background: hex,
+                      border:
+                        hex === "#F3F2EF" || hex === "#DEDDD8"
+                          ? "1px solid rgba(14,14,14,0.14)"
+                          : "none",
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span
+                    style={{
+                      ...MONO,
+                      fontSize: 7.5,
+                      letterSpacing: "0.10em",
+                      color: "#8C8C86",
+                      textTransform: "uppercase",
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ══ TOP OCCASIONS ═════════════════════════════════════ */}
+          <div
+            style={{
+              borderTop: "1px solid rgba(14,14,14,0.10)",
+              background: "#F3F2EF",
+            }}
+          >
+            {/* kicker */}
+            <div style={{ padding: "28px 24px 0" }}>
+              <span
+                style={{
+                  ...MONO,
+                  fontSize: 9,
+                  fontWeight: 500,
+                  letterSpacing: "0.20em",
+                  color: "#8C8C86",
+                  textTransform: "uppercase",
+                }}
+              >
+                YOU DRESS FOR
+              </span>
+            </div>
+
+            {/* occasion rows */}
+            <div style={{ marginTop: 16 }}>
+              {OCCASIONS.map((occ) => (
+                <OccasionRow key={occ} label={occ} />
+              ))}
+            </div>
+          </div>
+
+          {/* ══ SETTINGS ══════════════════════════════════════════ */}
+          <div
+            style={{
+              borderTop: "1px solid rgba(14,14,14,0.10)",
+              background: "#F3F2EF",
+              marginTop: 8,
+            }}
+          >
+            {/* kicker */}
+            <div style={{ padding: "28px 24px 0" }}>
+              <span
+                style={{
+                  ...MONO,
+                  fontSize: 9,
+                  fontWeight: 500,
+                  letterSpacing: "0.20em",
+                  color: "#8C8C86",
+                  textTransform: "uppercase",
+                }}
+              >
+                SETTINGS
+              </span>
+            </div>
+
+            {/* settings rows */}
+            <div
+              style={{
+                marginTop: 16,
+                borderTop: "1px solid rgba(14,14,14,0.08)",
+              }}
+            >
+              {SETTINGS_ROWS.map((label, i) => (
+                <SettingsRow
+                  key={label}
+                  label={label}
+                  isLast={i === SETTINGS_ROWS.length - 1}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* bottom breathing room */}
+          <div style={{ height: 32 }} />
+        </main>
+
+        <BottomNav />
+      </div>
+    </div>
+  );
+}
