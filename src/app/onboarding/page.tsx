@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 const STYLE_OPTIONS = [
   { id: "minimal", label: "MINIMAL", desc: "Clean lines, neutral palette, nothing unnecessary." },
@@ -14,8 +13,6 @@ const STYLE_OPTIONS = [
 ];
 
 const OCCASION_OPTIONS = ["EVERYDAY", "WORK", "CASUAL", "EVENING", "ALL OF THE ABOVE"];
-
-const steps = ["STYLE", "OCCASION", "DONE"];
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(0);
@@ -29,146 +26,289 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F0] flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: "#F3F2EF" }}>
+
       {/* Nav */}
-      <header className="flex items-center justify-between px-6 h-[60px] border-b border-[#0A0A0A] bg-white">
-        <span className="font-display text-[24px] font-semibold text-[#0A0A0A]">Mirror</span>
+      <header
+        className="flex items-center justify-between px-5 md:px-10"
+        style={{
+          height: "56px",
+          background: "#F3F2EF",
+          borderBottom: "1px solid rgba(14,14,14,0.12)",
+        }}
+      >
+        <span
+          className="font-display italic"
+          style={{ fontSize: "22px", fontWeight: 500, color: "#0E0E0E" }}
+        >
+          Mirror
+        </span>
         <Link
           href="/"
-          className="font-sans text-[13px] font-semibold uppercase tracking-[0.08em] text-[#5C5C5C] hover:text-[#0A0A0A] transition-colors"
+          className="font-mono-label hover:text-[#0E0E0E] transition-colors duration-200"
+          style={{ fontSize: "11px", color: "#6B6B66" }}
         >
           EXIT
         </Link>
       </header>
 
-      <div className="flex-1 max-w-[720px] mx-auto w-full px-6 py-12">
-        {/* Progress */}
-        <div className="flex items-center gap-2 mb-10">
-          {steps.map((s, i) => (
-            <div key={s} className="flex items-center gap-2">
-              <div
-                className={`h-1 w-16 transition-colors ${
-                  i <= step ? "bg-[#0A0A0A]" : "bg-[#D4D4CF]"
-                }`}
-              />
-              <span
-                className={`font-sans text-[11px] font-semibold uppercase tracking-[0.1em] ${
-                  i === step ? "text-[#0A0A0A]" : "text-[#D4D4CF]"
-                }`}
-              >
-                {s}
-              </span>
-            </div>
-          ))}
-        </div>
+      <div
+        className="flex-1 w-full mx-auto px-5 md:px-10 py-12"
+        style={{ maxWidth: "600px" }}
+      >
 
-        {/* Step 0: Style */}
+        {/* ── Step 0: Style ── */}
         {step === 0 && (
           <div>
-            <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.08em] text-[#5C5C5C] mb-3">
-              STEP 1 OF 2
+            {/* Progress */}
+            <p className="font-mono-label" style={{ fontSize: "11px", color: "#6B6B66", marginBottom: "32px" }}>
+              1 OF 2
             </p>
-            <h1 className="font-display text-[36px] font-semibold leading-[42px] tracking-[-0.01em] text-[#0A0A0A] mb-2">
+
+            <h1
+              className="font-display"
+              style={{
+                fontSize: "clamp(28px, 5vw, 40px)",
+                fontWeight: 500,
+                lineHeight: 1.08,
+                letterSpacing: "-0.01em",
+                color: "#0E0E0E",
+                marginBottom: "8px",
+              }}
+            >
               What describes your style?
             </h1>
-            <p className="font-sans text-[14px] leading-[22px] text-[#5C5C5C] mb-8">
+            <p style={{ fontSize: "14px", lineHeight: 1.6, color: "#6B6B66", marginBottom: "40px" }}>
               Select all that apply. Mirror uses this to tailor your outfit suggestions.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-[#0A0A0A]">
-              {STYLE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.id}
-                  onClick={() => toggleStyle(opt.id)}
-                  className={`text-left px-6 py-5 transition-colors ${
-                    selectedStyles.includes(opt.id)
-                      ? "bg-[#0A0A0A] text-white"
-                      : "bg-white text-[#0A0A0A] hover:bg-[#E8E8E3]"
-                  }`}
-                >
-                  <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.08em] mb-1">
-                    {opt.label}
-                  </p>
-                  <p
-                    className={`font-sans text-[13px] leading-[20px] ${
-                      selectedStyles.includes(opt.id) ? "text-white/60" : "text-[#5C5C5C]"
-                    }`}
+
+            {/* Option rows */}
+            <div style={{ borderTop: "1px solid rgba(14,14,14,0.12)" }}>
+              {STYLE_OPTIONS.map((opt) => {
+                const selected = selectedStyles.includes(opt.id);
+                return (
+                  <button
+                    key={opt.id}
+                    onClick={() => toggleStyle(opt.id)}
+                    className="w-full text-left transition-colors duration-150"
+                    style={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      justifyContent: "space-between",
+                      padding: "20px 0",
+                      borderBottom: "1px solid rgba(14,14,14,0.12)",
+                      background: "transparent",
+                      cursor: "pointer",
+                    }}
                   >
-                    {opt.desc}
-                  </p>
-                </button>
-              ))}
+                    <div>
+                      <p
+                        className="font-mono-label"
+                        style={{
+                          fontSize: "12px",
+                          color: selected ? "#0E0E0E" : "#0E0E0E",
+                          marginBottom: "4px",
+                        }}
+                      >
+                        {opt.label}
+                      </p>
+                      <p style={{ fontSize: "13px", lineHeight: 1.5, color: "#6B6B66" }}>
+                        {opt.desc}
+                      </p>
+                    </div>
+                    {/* Selection indicator */}
+                    <span
+                      className="font-mono-label shrink-0"
+                      style={{
+                        fontSize: "11px",
+                        color: selected ? "#0E0E0E" : "transparent",
+                        marginLeft: "16px",
+                        marginTop: "2px",
+                        transition: "color 150ms",
+                      }}
+                    >
+                      ✕
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-            <div className="mt-8">
-              <Button
-                variant="primary"
-                className="w-full"
-                disabled={selectedStyles.length === 0}
-                onClick={() => setStep(1)}
-              >
-                CONTINUE
-              </Button>
-            </div>
+
+            <button
+              onClick={() => setStep(1)}
+              disabled={selectedStyles.length === 0}
+              className="w-full transition-colors duration-200"
+              style={{
+                marginTop: "32px",
+                height: "56px",
+                background: selectedStyles.length === 0 ? "#ABABA4" : "#0E0E0E",
+                color: "#FFFFFF",
+                fontFamily: "var(--font-sans)",
+                fontWeight: 600,
+                fontSize: "13px",
+                textTransform: "uppercase",
+                letterSpacing: "0.22em",
+                border: "none",
+                cursor: selectedStyles.length === 0 ? "not-allowed" : "pointer",
+              }}
+            >
+              CONTINUE
+            </button>
           </div>
         )}
 
-        {/* Step 1: Occasion */}
+        {/* ── Step 1: Occasion ── */}
         {step === 1 && (
           <div>
-            <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.08em] text-[#5C5C5C] mb-3">
-              STEP 2 OF 2
+            {/* Progress */}
+            <p className="font-mono-label" style={{ fontSize: "11px", color: "#6B6B66", marginBottom: "32px" }}>
+              2 OF 2
             </p>
-            <h1 className="font-display text-[36px] font-semibold leading-[42px] tracking-[-0.01em] text-[#0A0A0A] mb-2">
+
+            <h1
+              className="font-display"
+              style={{
+                fontSize: "clamp(28px, 5vw, 40px)",
+                fontWeight: 500,
+                lineHeight: 1.08,
+                letterSpacing: "-0.01em",
+                color: "#0E0E0E",
+                marginBottom: "8px",
+              }}
+            >
               What do you dress for most?
             </h1>
-            <p className="font-sans text-[14px] leading-[22px] text-[#5C5C5C] mb-8">
+            <p style={{ fontSize: "14px", lineHeight: 1.6, color: "#6B6B66", marginBottom: "40px" }}>
               Mirror will prioritise outfit suggestions for this context.
             </p>
-            <div className="flex flex-col gap-px bg-[#0A0A0A]">
-              {OCCASION_OPTIONS.map((occ) => (
-                <button
-                  key={occ}
-                  onClick={() => setSelectedOccasion(occ)}
-                  className={`text-left px-6 h-[60px] flex items-center font-sans text-[13px] font-semibold uppercase tracking-[0.08em] transition-colors ${
-                    selectedOccasion === occ
-                      ? "bg-[#0A0A0A] text-white"
-                      : "bg-white text-[#0A0A0A] hover:bg-[#E8E8E3]"
-                  }`}
-                >
-                  {occ}
-                </button>
-              ))}
+
+            {/* Option rows */}
+            <div style={{ borderTop: "1px solid rgba(14,14,14,0.12)" }}>
+              {OCCASION_OPTIONS.map((occ) => {
+                const selected = selectedOccasion === occ;
+                return (
+                  <button
+                    key={occ}
+                    onClick={() => setSelectedOccasion(occ)}
+                    className="w-full text-left transition-colors duration-150"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      height: "60px",
+                      borderBottom: "1px solid rgba(14,14,14,0.12)",
+                      background: selected ? "#0E0E0E" : "transparent",
+                      padding: "0",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <span
+                      className="font-mono-label"
+                      style={{
+                        fontSize: "12px",
+                        color: selected ? "#FFFFFF" : "#0E0E0E",
+                        paddingLeft: selected ? "20px" : "0",
+                        transition: "padding 150ms, color 150ms",
+                      }}
+                    >
+                      {occ}
+                    </span>
+                    {selected && (
+                      <span
+                        className="font-mono-label"
+                        style={{ fontSize: "11px", color: "#FFFFFF", paddingRight: "20px" }}
+                      >
+                        ✕
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
-            <div className="mt-8 flex gap-4">
-              <Button variant="secondary" className="flex-1" onClick={() => setStep(0)}>
+
+            <div style={{ display: "flex", gap: "8px", marginTop: "32px" }}>
+              <button
+                onClick={() => setStep(0)}
+                className="transition-colors duration-200"
+                style={{
+                  flex: 1,
+                  height: "56px",
+                  background: "transparent",
+                  color: "#0E0E0E",
+                  fontFamily: "var(--font-sans)",
+                  fontWeight: 600,
+                  fontSize: "13px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.22em",
+                  border: "1px solid rgba(14,14,14,0.24)",
+                  cursor: "pointer",
+                }}
+              >
                 BACK
-              </Button>
-              <Button
-                variant="primary"
-                className="flex-1"
-                disabled={!selectedOccasion}
+              </button>
+              <button
                 onClick={() => setStep(2)}
+                disabled={!selectedOccasion}
+                className="transition-colors duration-200"
+                style={{
+                  flex: 1,
+                  height: "56px",
+                  background: selectedOccasion ? "#0E0E0E" : "#ABABA4",
+                  color: "#FFFFFF",
+                  fontFamily: "var(--font-sans)",
+                  fontWeight: 600,
+                  fontSize: "13px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.22em",
+                  border: "none",
+                  cursor: selectedOccasion ? "pointer" : "not-allowed",
+                }}
               >
                 FINISH
-              </Button>
+              </button>
             </div>
           </div>
         )}
 
-        {/* Step 2: Done */}
+        {/* ── Step 2: Done ── */}
         {step === 2 && (
-          <div className="text-center">
-            <p className="font-sans text-[13px] font-semibold uppercase tracking-[0.08em] text-[#5C5C5C] mb-3">
+          <div style={{ textAlign: "center", paddingTop: "48px" }}>
+            <p className="font-mono-label" style={{ fontSize: "11px", color: "#6B6B66", marginBottom: "24px" }}>
               YOU&apos;RE ALL SET
             </p>
-            <h1 className="font-display text-[56px] font-bold leading-[60px] tracking-[-0.02em] text-[#0A0A0A] mb-4">
+            <h1
+              className="font-display"
+              style={{
+                fontSize: "clamp(36px, 7vw, 56px)",
+                fontWeight: 500,
+                lineHeight: 1.02,
+                letterSpacing: "-0.015em",
+                color: "#0E0E0E",
+                marginBottom: "16px",
+              }}
+            >
               Welcome to Mirror.
             </h1>
-            <p className="font-sans text-[16px] leading-[26px] text-[#5C5C5C] mb-10">
+            <p style={{ fontSize: "15px", lineHeight: 1.6, color: "#6B6B66", marginBottom: "48px" }}>
               Start by adding items to your wardrobe. Mirror will get to work.
             </p>
-            <Button variant="accent" size="lg" asChild>
-              <Link href="/wardrobe/add">ADD YOUR FIRST ITEM</Link>
-            </Button>
+            <Link
+              href="/closet/add"
+              className="w-full inline-flex items-center justify-center transition-colors duration-200 hover:bg-[#1A1A1A]"
+              style={{
+                height: "56px",
+                background: "#0E0E0E",
+                color: "#FFFFFF",
+                fontFamily: "var(--font-sans)",
+                fontWeight: 600,
+                fontSize: "13px",
+                textTransform: "uppercase",
+                letterSpacing: "0.22em",
+                textDecoration: "none",
+              }}
+            >
+              ADD YOUR FIRST ITEM
+            </Link>
           </div>
         )}
       </div>
