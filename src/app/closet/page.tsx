@@ -368,52 +368,22 @@ export default function ClosetPage() {
           >
             Closet
           </span>
-          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-            <Link
-              href="/checker"
-              style={{
-                ...MONO,
-                fontSize: 10,
-                letterSpacing: "0.16em",
-                color: "#6B6B66",
-                textDecoration: "none",
-              }}
-            >
-              BUY?
-            </Link>
           <Link
-            href="/add"
-            aria-label="Add item"
+            href="/checker"
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 32,
-              height: 32,
-              color: "#0E0E0E",
+              ...MONO,
+              fontSize: 10,
+              letterSpacing: "0.16em",
+              color: "#6B6B66",
               textDecoration: "none",
             }}
           >
-            {/* Lucide-style plus — 1.5px stroke, square caps */}
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="#0E0E0E"
-              strokeWidth="1.5"
-              strokeLinecap="square"
-              aria-hidden="true"
-            >
-              <line x1="10" y1="3" x2="10" y2="17" />
-              <line x1="3" y1="10" x2="17" y2="10" />
-            </svg>
+            BUY?
           </Link>
-          </div>
         </header>
 
         {/* ── Scrollable body ── */}
-        <main style={{ flex: 1, overflowY: "auto", paddingBottom: 80 }}>
+        <main style={{ flex: 1, overflowY: "auto", paddingBottom: 144 }}>
 
           {/* stats */}
           <div style={{ padding: "20px 20px 14px" }}>
@@ -566,6 +536,34 @@ export default function ClosetPage() {
           )}
 
         </main>
+
+        {/* Pinned add CTA — sits above bottom nav, explicit label */}
+        <Link
+          href="/add"
+          style={{
+            ...SANS,
+            position: "fixed",
+            bottom: 64,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "100%",
+            maxWidth: 390,
+            height: 56,
+            background: "#0E0E0E",
+            color: "#FFFFFF",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 13,
+            fontWeight: 600,
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+            textDecoration: "none",
+            zIndex: 40,
+          }}
+        >
+          ADD TO CLOSET →
+        </Link>
 
         <BottomNav />
 
