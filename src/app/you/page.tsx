@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
-import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 
 // ─── style constants ──────────────────────────────────────────────────────────
@@ -136,20 +135,13 @@ export default function YouPage() {
   useEffect(() => {
     if (!userId) return;
     async function fetchAll() {
-      const [piecesRes, outfitsRes, confirmedRes, profileRes] = await Promise.all([
-        supabase.from("wardrobe_items").select("id", { count: "exact", head: true }).eq("user_id", userId),
-        supabase.from("outfit_suggestions").select("id", { count: "exact", head: true }).eq("user_id", userId),
-        supabase.from("outfit_suggestions").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("worn", true),
-        supabase.from("style_profiles").select("archetype, descriptors").eq("user_id", userId).maybeSingle(),
-      ]);
-      setStats({
-        pieces: piecesRes.count ?? 0,
-        outfits: outfitsRes.count ?? 0,
-        confirmed: confirmedRes.count ?? 0,
-      });
-      if (profileRes.data) {
-        setProfile(profileRes.data as StyleProfile);
-      } else if ((piecesRes.count ?? 0) >= 5) {
+      const statsRes = await fetch('/api/stats');
+      if (!statsRes.ok) return;
+      const { pieces, outfits, confirmed, profile: existingProfile } = await statsRes.json();
+      setStats({ pieces, outfits, confirmed });
+      if (existingProfile) {
+        setProfile(existingProfile as StyleProfile);
+      } else if (pieces >= 5) {
         // Auto-generate profile when user has 5+ items and no profile yet
         setGeneratingProfile(true);
         try {
