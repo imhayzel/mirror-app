@@ -4,7 +4,6 @@ import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
-import { addItem } from "@/lib/wardrobe";
 import BottomNav from "@/components/BottomNav";
 
 // ─── constants ────────────────────────────────────────────────────────────────
@@ -97,16 +96,19 @@ export default function AddPage() {
       const data = await res.json();
       if (data.error === 'daily_limit_reached') {
         setError("You've had five looks today. Come back tomorrow.");
-      } else if (data.error) {
-        setError("Couldn't analyse image. Fill in the details manually.");
       } else {
+        // Fill whatever fields we got back
         if (data.name) setName(data.name);
         if (data.type) setType(data.type as ItemType);
         if (data.color) setColor(data.color);
-        // If a product URL was scrapped, update the preview with the resolved image URL
+        // Update preview with the resolved product image URL
         if (data.image_url) {
           setImagePreview(data.image_url);
           setImageUrl(data.image_url);
+        }
+        // Only show an error if we got nothing useful at all
+        if (!data.name && !data.image_url) {
+          setError("Couldn't analyse image. Fill in the details manually.");
         }
       }
     } catch {
@@ -152,18 +154,28 @@ export default function AddPage() {
     setSaving(true);
     setError(null);
     try {
-      await addItem({
-        name: name.trim(),
-        type,
-        color: color.trim() || null,
-        image_url: imageUrl,
-      }, userId);
+      const res = await fetch('/api/wardrobe/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          type,
+          color: color.trim() || null,
+          image_url: imageUrl,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        console.error('[add page] save error:', data);
+        throw new Error(data.error || 'Save failed');
+      }
       router.push("/closet");
-    } catch {
+    } catch (err) {
+      console.error('[add page] save failed:', err);
       setError("Failed to save. Check your connection and try again.");
       setSaving(false);
     }
-  }, [name, type, color, imageUrl, router]);
+  }, [name, type, color, imageUrl, userId, router]);
 
   const canSave = name.trim().length > 0 && type !== null && !saving && !categorizing && !!userId;
 

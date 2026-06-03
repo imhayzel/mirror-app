@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { supabase } from '@/lib/supabase'
+import { SupabaseClient } from '@supabase/supabase-js'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 
 const anthropic = new Anthropic()
 
-async function isDailyLimitReached(userId: string): Promise<boolean> {
+async function isDailyLimitReached(userId: string, db: SupabaseClient): Promise<boolean> {
   const today = new Date().toISOString().split('T')[0]
-  const { count } = await supabase
+  const { count } = await db
     .from('ai_usage')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId)
@@ -15,8 +16,8 @@ async function isDailyLimitReached(userId: string): Promise<boolean> {
   return (count ?? 0) >= 5
 }
 
-async function logUsage(userId: string, feature: string) {
-  await supabase.from('ai_usage').insert({ user_id: userId, feature })
+async function logUsage(userId: string, feature: string, db: SupabaseClient) {
+  await db.from('ai_usage').insert({ user_id: userId, feature })
 }
 
 type WardrobeRow = { name: string; type: string; color: string | null; descriptors: string[] | null }
@@ -25,7 +26,9 @@ export async function POST() {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { data: items } = await supabase
+  const db = await createServerSupabaseClient()
+
+  const { data: items } = await db
     .from('wardrobe_items')
     .select('name, type, color, descriptors')
     .eq('user_id', userId)
@@ -37,7 +40,7 @@ export async function POST() {
     )
   }
 
-  if (await isDailyLimitReached(userId)) {
+  if (await isDailyLimitReached(userId, db)) {
     return NextResponse.json({ error: 'daily_limit_reached' }, { status: 429 })
   }
 
@@ -65,14 +68,14 @@ export async function POST() {
 
     const data = JSON.parse(match[0])
 
-    await supabase
+    await db
       .from('style_profiles')
       .upsert(
         { user_id: userId, archetype: data.archetype, descriptors: data.descriptors, updated_at: new Date().toISOString() },
         { onConflict: 'user_id' }
       )
 
-    await logUsage(userId, 'style_profile')
+    await logUsage(userId, 'style_profile', db)
 
     return NextResponse.json(data)
   } catch (err) {

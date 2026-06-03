@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { supabase } from '@/lib/supabase'
+import { SupabaseClient } from '@supabase/supabase-js'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 
 const anthropic = new Anthropic()
 
-async function isDailyLimitReached(userId: string): Promise<boolean> {
+async function isDailyLimitReached(userId: string, db: SupabaseClient): Promise<boolean> {
   const today = new Date().toISOString().split('T')[0]
-  const { count } = await supabase
+  const { count } = await db
     .from('ai_usage')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId)
@@ -15,8 +16,8 @@ async function isDailyLimitReached(userId: string): Promise<boolean> {
   return (count ?? 0) >= 5
 }
 
-async function logUsage(userId: string, feature: string) {
-  await supabase.from('ai_usage').insert({ user_id: userId, feature })
+async function logUsage(userId: string, feature: string, db: SupabaseClient) {
+  await db.from('ai_usage').insert({ user_id: userId, feature })
 }
 
 const IMAGE_EXT_RE = /\.(jpe?g|png|webp|gif)(\?.*)?$/i
@@ -63,7 +64,9 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  if (await isDailyLimitReached(userId)) {
+  const db = await createServerSupabaseClient()
+
+  if (await isDailyLimitReached(userId, db)) {
     return NextResponse.json({ error: 'daily_limit_reached' }, { status: 429 })
   }
 
@@ -123,7 +126,17 @@ export async function POST(req: NextRequest) {
           },
           {
             type: 'text',
-            text: 'You are a fashion expert. Look at this clothing item and extract:\n1. name: short descriptive name (2-4 words, e.g. "Camel wool coat")\n2. type: one of TOP, BOTTOM, OUTERWEAR, SHOES, ACCESSORY\n3. color: primary color (e.g. "Camel", "Navy", "Ivory")\n\nRespond with ONLY valid JSON, no other text: {"name": "...", "type": "...", "color": "..."}'
+            text: `You are a fashion expert. Look at this clothing item and extract:
+1. name: short descriptive name (2-4 words, e.g. "Camel wool coat")
+2. type: choose ONE from the definitions below — be strict:
+   - TOP: t-shirts, shirts, blouses, tank tops, lightweight base layer sweaters (worn under a jacket/coat)
+   - OUTERWEAR: ALL jackets, coats, hoodies, zip-up hoodies, blazers, cardigans, bombers, parkas, trench coats, windbreakers — anything worn as the outer layer. ZIP HOODIES ARE ALWAYS OUTERWEAR.
+   - BOTTOM: trousers, jeans, shorts, skirts, leggings, tights
+   - SHOES: all footwear — sneakers, boots, heels, sandals, loafers
+   - ACCESSORY: bags, scarves, hats, jewellery, belts, sunglasses
+3. color: primary color (e.g. "Camel", "Navy", "Ivory", "Black")
+
+Respond with ONLY valid JSON, no other text: {"name": "...", "type": "...", "color": "..."}`
           }
         ]
       }]
@@ -137,7 +150,7 @@ export async function POST(req: NextRequest) {
     data.type = (data.type as string).toLowerCase()
     if (resolvedImageUrl) data.image_url = resolvedImageUrl
 
-    await logUsage(userId, 'categorize')
+    await logUsage(userId, 'categorize', db)
     return NextResponse.json(data)
   } catch (err) {
     console.error('[categorize] Anthropic error:', err)

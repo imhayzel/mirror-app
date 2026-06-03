@@ -1,4 +1,5 @@
-import { supabase } from './supabase'
+import { SupabaseClient } from '@supabase/supabase-js'
+import { supabase as defaultClient } from './supabase'
 
 export type WardrobeItem = {
   id: string
@@ -13,8 +14,8 @@ export type WardrobeItem = {
 
 export type NewWardrobeItem = Pick<WardrobeItem, 'name' | 'type' | 'color' | 'image_url' | 'descriptors'>
 
-export async function getItems(userId: string): Promise<WardrobeItem[]> {
-  const { data, error } = await supabase
+export async function getItems(userId: string, db: SupabaseClient = defaultClient): Promise<WardrobeItem[]> {
+  const { data, error } = await db
     .from('wardrobe_items')
     .select('*')
     .eq('user_id', userId)
@@ -27,8 +28,8 @@ export async function getItems(userId: string): Promise<WardrobeItem[]> {
   return data ?? []
 }
 
-export async function getItem(id: string): Promise<WardrobeItem> {
-  const { data, error } = await supabase
+export async function getItem(id: string, db: SupabaseClient = defaultClient): Promise<WardrobeItem> {
+  const { data, error } = await db
     .from('wardrobe_items')
     .select('*')
     .eq('id', id)
@@ -43,9 +44,10 @@ export async function getItem(id: string): Promise<WardrobeItem> {
 
 export async function addItem(
   item: Omit<NewWardrobeItem, 'descriptors'> & { descriptors?: string[] },
-  userId: string
+  userId: string,
+  db: SupabaseClient = defaultClient,
 ): Promise<WardrobeItem> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('wardrobe_items')
     .insert({ descriptors: [], ...item, user_id: userId })
     .select()
@@ -60,9 +62,10 @@ export async function addItem(
 
 export async function updateItem(
   id: string,
-  updates: Partial<NewWardrobeItem>
+  updates: Partial<NewWardrobeItem>,
+  db: SupabaseClient = defaultClient,
 ): Promise<WardrobeItem> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('wardrobe_items')
     .update(updates)
     .eq('id', id)
@@ -76,8 +79,8 @@ export async function updateItem(
   return data
 }
 
-export async function deleteItem(id: string): Promise<void> {
-  const { error } = await supabase
+export async function deleteItem(id: string, db: SupabaseClient = defaultClient): Promise<void> {
+  const { error } = await db
     .from('wardrobe_items')
     .delete()
     .eq('id', id)

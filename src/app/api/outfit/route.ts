@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { supabase } from '@/lib/supabase'
+import { SupabaseClient } from '@supabase/supabase-js'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 
 const anthropic = new Anthropic()
 
-async function isDailyLimitReached(userId: string): Promise<boolean> {
+async function isDailyLimitReached(userId: string, db: SupabaseClient): Promise<boolean> {
   const today = new Date().toISOString().split('T')[0]
-  const { count } = await supabase
+  const { count } = await db
     .from('ai_usage')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId)
@@ -15,8 +16,8 @@ async function isDailyLimitReached(userId: string): Promise<boolean> {
   return (count ?? 0) >= 5
 }
 
-async function logUsage(userId: string, feature: string) {
-  await supabase.from('ai_usage').insert({ user_id: userId, feature })
+async function logUsage(userId: string, feature: string, db: SupabaseClient) {
+  await db.from('ai_usage').insert({ user_id: userId, feature })
 }
 
 type WardrobeRow = { id: string; name: string; type: string; color: string | null; image_url: string | null }
@@ -25,14 +26,16 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  if (await isDailyLimitReached(userId)) {
+  const db = await createServerSupabaseClient()
+
+  if (await isDailyLimitReached(userId, db)) {
     return NextResponse.json({ error: 'daily_limit_reached' }, { status: 429 })
   }
 
   const body = await req.json().catch(() => ({}))
   const context: string | undefined = body.context
 
-  const { data: items } = await supabase
+  const { data: items } = await db
     .from('wardrobe_items')
     .select('id, name, type, color, image_url')
     .eq('user_id', userId)
@@ -67,7 +70,7 @@ export async function POST(req: NextRequest) {
     const parsed = JSON.parse(match[0])
     const selectedItems = (items as WardrobeRow[]).filter(i => (parsed.item_ids as string[]).includes(i.id))
 
-    await logUsage(userId, 'outfit')
+    await logUsage(userId, 'outfit', db)
 
     return NextResponse.json({
       outfit_name: parsed.outfit_name as string,

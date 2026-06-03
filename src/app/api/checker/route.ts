@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { supabase } from '@/lib/supabase'
+import { SupabaseClient } from '@supabase/supabase-js'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 
 const anthropic = new Anthropic()
 
-async function isDailyLimitReached(userId: string): Promise<boolean> {
+async function isDailyLimitReached(userId: string, db: SupabaseClient): Promise<boolean> {
   const today = new Date().toISOString().split('T')[0]
-  const { count } = await supabase
+  const { count } = await db
     .from('ai_usage')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId)
@@ -15,8 +16,8 @@ async function isDailyLimitReached(userId: string): Promise<boolean> {
   return (count ?? 0) >= 5
 }
 
-async function logUsage(userId: string, feature: string) {
-  await supabase.from('ai_usage').insert({ user_id: userId, feature })
+async function logUsage(userId: string, feature: string, db: SupabaseClient) {
+  await db.from('ai_usage').insert({ user_id: userId, feature })
 }
 
 async function extractImageUrl(productUrl: string): Promise<string | null> {
@@ -42,7 +43,9 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  if (await isDailyLimitReached(userId)) {
+  const db = await createServerSupabaseClient()
+
+  if (await isDailyLimitReached(userId, db)) {
     return NextResponse.json({ error: 'daily_limit_reached' }, { status: 429 })
   }
 
@@ -51,7 +54,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Provide imageBase64 or productUrl' }, { status: 400 })
   }
 
-  const { data: items } = await supabase
+  const { data: items } = await db
     .from('wardrobe_items')
     .select('name, type, color')
     .eq('user_id', userId)
@@ -99,7 +102,7 @@ export async function POST(req: NextRequest) {
     if (!match) return NextResponse.json({ error: 'Failed to parse response' }, { status: 500 })
 
     const data = JSON.parse(match[0])
-    await logUsage(userId, 'checker')
+    await logUsage(userId, 'checker', db)
 
     return NextResponse.json(data)
   } catch (err) {
