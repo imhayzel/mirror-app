@@ -6,12 +6,6 @@ import { useAuth } from "@clerk/nextjs";
 import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 
-// ─── placeholder outfit data ──────────────────────────────────────────────────
-
-const OUTFIT_PIECES = ["Camel wool coat", "Ivory ribbed crew", "Pleated wide-leg"];
-const OUTFIT_REASONING =
-  "A considered combination built around restraint. The ivory crew reads effortless against the charcoal weight below — clean contrast, no aggression. This works for a day that could go either way.";
-
 // ─── types ────────────────────────────────────────────────────────────────────
 
 type LastOutfit = {
@@ -233,9 +227,9 @@ export default function HomePage() {
   const { userId } = useAuth();
   const dateKicker = formatDateKicker(new Date());
 
-  // outfit confirm state
-  const [saving, setSaving] = useState(false);
-  const [confirmed, setConfirmed] = useState(false);
+  // outfit generation
+  const [generatingOutfit, setGeneratingOutfit] = useState(false);
+  const [limitReached, setLimitReached] = useState(false);
 
   // sheets
   const [vibeOpen, setVibeOpen] = useState(false);
@@ -258,39 +252,43 @@ export default function HomePage() {
       });
   }, [userId]);
 
-  const handleWearingThis = useCallback(async () => {
-    if (saving || confirmed || !userId) return;
-    setSaving(true);
+  const handleGenerateOutfit = useCallback(async (context?: string) => {
+    if (!userId || generatingOutfit) return;
+    setGeneratingOutfit(true);
+    setLimitReached(false);
     try {
-      await supabase.from("outfit_suggestions").insert({
-        user_id: userId,
-        items: OUTFIT_PIECES,
-        reasoning: OUTFIT_REASONING,
-        worn: true,
+      const res = await fetch("/api/outfit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ context }),
       });
-      setConfirmed(true);
-      // refresh last look
-      setLastOutfit({
-        id: "new",
-        items: OUTFIT_PIECES,
-        created_at: new Date().toISOString(),
-      });
+      const data = await res.json();
+      if (data.error === "daily_limit_reached") {
+        setLimitReached(true);
+        return;
+      }
+      if (data.error === "not_enough_items") {
+        router.push("/closet");
+        return;
+      }
+      sessionStorage.setItem("mirror_outfit", JSON.stringify(data));
+      router.push("/outfit");
     } catch {
-      // silent — no error UI needed at this level
+      // silent
     } finally {
-      setSaving(false);
+      setGeneratingOutfit(false);
     }
-  }, [saving, confirmed]);
+  }, [userId, generatingOutfit, router]);
 
-  const handleVibeSubmit = useCallback(() => {
+  const handleVibeSubmit = useCallback((text: string) => {
     setVibeOpen(false);
-    router.push("/outfit");
-  }, [router]);
+    handleGenerateOutfit(text);
+  }, [handleGenerateOutfit]);
 
-  const handleOccasionSubmit = useCallback(() => {
+  const handleOccasionSubmit = useCallback((text: string) => {
     setOccasionOpen(false);
-    router.push("/outfit");
-  }, [router]);
+    handleGenerateOutfit(text);
+  }, [handleGenerateOutfit]);
 
   return (
     <div
@@ -431,12 +429,12 @@ export default function HomePage() {
 
             {/* flat lay image — 4:3 ratio, tappable */}
             <div
-              onClick={() => router.push("/outfit")}
+              onClick={() => handleGenerateOutfit()}
               style={{
                 aspectRatio: "4/3",
                 position: "relative",
                 overflow: "hidden",
-                cursor: "pointer",
+                cursor: generatingOutfit ? "default" : "pointer",
                 marginLeft: -24,
                 marginRight: -24,
                 width: "calc(100% + 48px)",
@@ -449,6 +447,32 @@ export default function HomePage() {
                   background: "linear-gradient(160deg,#3a3a38 0%,#8c8b85 48%,#c8c7c0 100%)",
                 }}
               />
+              {/* generating overlay */}
+              {generatingOutfit && (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "rgba(14,14,14,0.55)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <span
+                    style={{
+                      ...MONO,
+                      fontSize: 10,
+                      fontWeight: 500,
+                      letterSpacing: "0.18em",
+                      color: "rgba(255,255,255,0.8)",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    FINDING YOUR LOOK…
+                  </span>
+                </div>
+              )}
               {/* bottom strip */}
               <div
                 style={{
@@ -470,58 +494,68 @@ export default function HomePage() {
                     color: "rgba(255,255,255,0.92)",
                   }}
                 >
-                  STYLED FOR 18° · OFFICE
+                  {generatingOutfit ? "" : "TAP TO GENERATE TODAY'S LOOK"}
                 </span>
               </div>
             </div>
 
-            {/* WEARING THIS / Noted. */}
+            {/* Daily limit message or CTA */}
             <div style={{ padding: "16px 0 24px" }}>
-              {confirmed ? (
+              {limitReached ? (
                 <div
                   style={{
-                    height: 52,
+                    padding: "16px 0",
                     display: "flex",
+                    flexDirection: "column",
                     alignItems: "center",
-                    justifyContent: "center",
-                    border: "1px solid rgba(255,255,255,0.14)",
+                    gap: 8,
                   }}
                 >
                   <span
                     style={{
+                      ...SERIF,
+                      fontSize: 17,
+                      fontWeight: 400,
+                      fontStyle: "italic",
+                      color: "rgba(255,255,255,0.7)",
+                    }}
+                  >
+                    You&apos;ve had five looks today. Come back tomorrow.
+                  </span>
+                  <span
+                    style={{
                       ...MONO,
-                      fontSize: 13,
-                      fontWeight: 500,
-                      letterSpacing: "0.18em",
-                      color: "#2F7D5B",
+                      fontSize: 9,
+                      letterSpacing: "0.16em",
+                      color: "rgba(255,255,255,0.3)",
                       textTransform: "uppercase",
                     }}
                   >
-                    Noted.
+                    RESETS DAILY AT MIDNIGHT
                   </span>
                 </div>
               ) : (
                 <button
                   type="button"
-                  onClick={handleWearingThis}
-                  disabled={saving}
+                  onClick={() => handleGenerateOutfit()}
+                  disabled={generatingOutfit}
                   style={{
                     ...SANS,
                     width: "100%",
                     height: 52,
-                    background: saving ? "rgba(255,255,255,0.6)" : "#FFFFFF",
+                    background: generatingOutfit ? "rgba(255,255,255,0.6)" : "#FFFFFF",
                     color: "#0E0E0E",
                     border: "none",
                     fontSize: 13,
                     fontWeight: 600,
                     letterSpacing: "0.22em",
                     textTransform: "uppercase",
-                    cursor: saving ? "default" : "pointer",
+                    cursor: generatingOutfit ? "default" : "pointer",
                     display: "block",
                     transition: "background 0.18s cubic-bezier(0.22,1,0.36,1)",
                   }}
                 >
-                  {saving ? "SAVING…" : "WEARING THIS"}
+                  {generatingOutfit ? "FINDING YOUR LOOK…" : "SURPRISE ME"}
                 </button>
               )}
             </div>
@@ -679,7 +713,7 @@ export default function HomePage() {
         {/* ── Vibe sheet ── */}
         {vibeOpen && (
           <VibeSheet
-            prompt="What's the feeling today?"
+            prompt="What&apos;s the feeling today?"
             placeholder="relaxed but put together..."
             submitLabel="FIND MY LOOK →"
             onClose={() => setVibeOpen(false)}
@@ -690,7 +724,7 @@ export default function HomePage() {
         {/* ── Occasion sheet ── */}
         {occasionOpen && (
           <VibeSheet
-            prompt="What's the occasion?"
+            prompt="What&apos;s the occasion?"
             placeholder="dinner, presentation, weekend..."
             submitLabel="DRESS ME FOR THIS →"
             onClose={() => setOccasionOpen(false)}

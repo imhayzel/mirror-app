@@ -74,6 +74,9 @@ export default function AddPage() {
   const [type, setType] = useState<ItemType | null>(null);
   const [color, setColor] = useState("");
 
+  // ai state
+  const [categorizing, setCategorizing] = useState(false);
+
   // submission state
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,13 +85,44 @@ export default function AddPage() {
 
   // ── handlers ──────────────────────────────────────────────────────────────
 
+  const runCategorize = useCallback(async (base64?: string, mime?: string, url?: string) => {
+    setCategorizing(true);
+    try {
+      const res = await fetch('/api/categorize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(base64 ? { imageBase64: base64, mimeType: mime } : { imageUrl: url }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.error === 'daily_limit_reached') {
+          setError("You've had five looks today. Come back tomorrow.");
+        } else {
+          if (data.name) setName(data.name);
+          if (data.type) setType(data.type as ItemType);
+          if (data.color) setColor(data.color);
+        }
+      }
+    } catch { /* silent — user can fill manually */ }
+    finally {
+      setCategorizing(false);
+    }
+  }, []);
+
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setImagePreview(URL.createObjectURL(file));
-    setImageUrl(null); // local file — no uploadable URL yet
+    setImageUrl(null);
     setError(null);
-  }, []);
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const result = evt.target?.result as string;
+      const base64 = result.split(',')[1];
+      runCategorize(base64, file.type);
+    };
+    reader.readAsDataURL(file);
+  }, [runCategorize]);
 
   const handleUrlCommit = useCallback(() => {
     const trimmed = urlInput.trim();
@@ -96,7 +130,8 @@ export default function AddPage() {
     setImagePreview(trimmed);
     setImageUrl(trimmed);
     setError(null);
-  }, [urlInput]);
+    runCategorize(undefined, undefined, trimmed);
+  }, [urlInput, runCategorize]);
 
   const handleClearImage = useCallback(() => {
     setImagePreview(null);
@@ -123,7 +158,7 @@ export default function AddPage() {
     }
   }, [name, type, color, imageUrl, router]);
 
-  const canSave = name.trim().length > 0 && type !== null && !saving && !!userId;
+  const canSave = name.trim().length > 0 && type !== null && !saving && !categorizing && !!userId;
 
   return (
     <div style={{ minHeight: "100vh", background: "#0E0E0E", display: "flex", justifyContent: "center" }}>
@@ -368,6 +403,28 @@ export default function AddPage() {
             {/* image preview */}
             {imagePreview && (
               <div style={{ marginBottom: 4 }}>
+                {categorizing && (
+                  <div
+                    style={{
+                      padding: "10px 0 14px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <span
+                      style={{
+                        ...MONO,
+                        fontSize: 10,
+                        letterSpacing: "0.16em",
+                        color: "rgba(255,255,255,0.45)",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      ANALYSING ITEM...
+                    </span>
+                  </div>
+                )}
                 <div
                   style={{
                     width: "100%",
@@ -536,7 +593,7 @@ export default function AddPage() {
                 transition: "background 0.24s cubic-bezier(0.22,1,0.36,1), color 0.24s cubic-bezier(0.22,1,0.36,1)",
               }}
             >
-              {saving ? "SAVING…" : "ADD TO CLOSET"}
+              {saving ? "SAVING…" : categorizing ? "ANALYSING…" : "ADD TO CLOSET"}
             </button>
 
             <div style={{ height: 16 }} />

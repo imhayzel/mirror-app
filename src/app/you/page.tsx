@@ -18,7 +18,7 @@ const SANS: React.CSSProperties = {
   fontFamily: "var(--font-sans), 'Helvetica Neue', Arial, sans-serif",
 };
 
-// ─── placeholder data ─────────────────────────────────────────────────────────
+// ─── static data ──────────────────────────────────────────────────────────────
 
 const PALETTE = [
   { hex: "#0E0E0E", name: "COAL" },
@@ -29,6 +29,13 @@ const PALETTE = [
 ];
 
 const OCCASIONS = ["CASUAL", "WORK", "WEEKEND"];
+
+// ─── profile type ─────────────────────────────────────────────────────────────
+
+type StyleProfile = {
+  archetype: string;
+  descriptors: string[];
+};
 const SETTINGS_ROWS = ["Account", "Notifications", "About Mirror"];
 
 // ─── types ────────────────────────────────────────────────────────────────────
@@ -123,32 +130,37 @@ function OccasionRow({ label }: { label: string }) {
 export default function YouPage() {
   const { userId } = useAuth();
   const [stats, setStats] = useState<Stats>({ pieces: 0, outfits: 0, confirmed: 0 });
+  const [profile, setProfile] = useState<StyleProfile | null>(null);
+  const [generatingProfile, setGeneratingProfile] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
-    async function fetchStats() {
-      const [piecesRes, outfitsRes, confirmedRes] = await Promise.all([
-        supabase
-          .from("wardrobe_items")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", userId),
-        supabase
-          .from("outfit_suggestions")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", userId),
-        supabase
-          .from("outfit_suggestions")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", userId)
-          .eq("worn", true),
+    async function fetchAll() {
+      const [piecesRes, outfitsRes, confirmedRes, profileRes] = await Promise.all([
+        supabase.from("wardrobe_items").select("id", { count: "exact", head: true }).eq("user_id", userId),
+        supabase.from("outfit_suggestions").select("id", { count: "exact", head: true }).eq("user_id", userId),
+        supabase.from("outfit_suggestions").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("worn", true),
+        supabase.from("style_profiles").select("archetype, descriptors").eq("user_id", userId).maybeSingle(),
       ]);
       setStats({
         pieces: piecesRes.count ?? 0,
         outfits: outfitsRes.count ?? 0,
         confirmed: confirmedRes.count ?? 0,
       });
+      if (profileRes.data) {
+        setProfile(profileRes.data as StyleProfile);
+      } else if ((piecesRes.count ?? 0) >= 5) {
+        // Auto-generate profile when user has 5+ items and no profile yet
+        setGeneratingProfile(true);
+        try {
+          const res = await fetch("/api/style-profile", { method: "POST" });
+          const data = await res.json();
+          if (!data.error) setProfile({ archetype: data.archetype, descriptors: data.descriptors });
+        } catch { /* silent */ }
+        finally { setGeneratingProfile(false); }
+      }
     }
-    fetchStats();
+    fetchAll();
   }, [userId]);
 
   return (
@@ -270,52 +282,51 @@ export default function YouPage() {
             </span>
 
             {/* archetype headline */}
-            <p
-              style={{
-                ...SERIF,
-                fontSize: 42,
-                fontWeight: 400,
-                fontStyle: "italic",
-                lineHeight: 1.06,
-                letterSpacing: "-0.02em",
-                color: "#FFFFFF",
-                margin: "0 0 28px",
-              }}
-            >
-              The Quiet Minimalist.
-            </p>
+            {generatingProfile ? (
+              <p style={{ ...MONO, fontSize: 10, letterSpacing: "0.16em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase", margin: "0 0 28px" }}>
+                BUILDING YOUR PROFILE…
+              </p>
+            ) : (
+              <p
+                style={{
+                  ...SERIF,
+                  fontSize: 42,
+                  fontWeight: 400,
+                  fontStyle: "italic",
+                  lineHeight: 1.06,
+                  letterSpacing: "-0.02em",
+                  color: "#FFFFFF",
+                  margin: "0 0 28px",
+                }}
+              >
+                {profile ? `${profile.archetype}.` : "Add 5 items to unlock."}
+              </p>
+            )}
 
             {/* descriptor tags */}
-            <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0 }}>
-              {["EFFORTLESS", "CONSIDERED", "UNDERSTATED"].map((tag, i, arr) => (
-                <span key={tag} style={{ display: "flex", alignItems: "center" }}>
-                  <span
-                    style={{
-                      ...MONO,
-                      fontSize: 10,
-                      fontWeight: 500,
-                      letterSpacing: "0.16em",
-                      color: "rgba(255,255,255,0.55)",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {tag}
-                  </span>
-                  {i < arr.length - 1 && (
+            {profile && !generatingProfile && (
+              <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0 }}>
+                {profile.descriptors.map((tag, i, arr) => (
+                  <span key={tag} style={{ display: "flex", alignItems: "center" }}>
                     <span
                       style={{
                         ...MONO,
                         fontSize: 10,
-                        color: "rgba(255,255,255,0.20)",
-                        margin: "0 10px",
+                        fontWeight: 500,
+                        letterSpacing: "0.16em",
+                        color: "rgba(255,255,255,0.55)",
+                        textTransform: "uppercase",
                       }}
                     >
-                      ·
+                      {tag}
                     </span>
-                  )}
-                </span>
-              ))}
-            </div>
+                    {i < arr.length - 1 && (
+                      <span style={{ ...MONO, fontSize: 10, color: "rgba(255,255,255,0.20)", margin: "0 10px" }}>·</span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* ══ WARDROBE STATS ════════════════════════════════════ */}

@@ -1,23 +1,37 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 
-// ─── placeholder outfit data ──────────────────────────────────────────────────
+// ─── types ────────────────────────────────────────────────────────────────────
 
-const OUTFIT_NAME = "The quiet confidence.";
+type OutfitItem = {
+  id: string;
+  name: string;
+  type: string;
+  color: string | null;
+  image_url: string | null;
+};
 
-const PIECES = [
-  { type: "OUTERWEAR", name: "Camel wool coat" },
-  { type: "KNITWEAR",  name: "Ivory ribbed crew" },
-  { type: "TROUSERS",  name: "Pleated wide-leg" },
-] as const;
+type OutfitData = {
+  outfit_name: string;
+  reasoning: string;
+  items: OutfitItem[];
+};
 
-const REASONING =
-  "A considered combination built around restraint. The ivory crew reads effortless against the charcoal weight below — clean contrast, no aggression. This works for a day that could go either way.";
+// ─── fallback placeholder ─────────────────────────────────────────────────────
+
+const FALLBACK_NAME = "The quiet confidence.";
+const FALLBACK_REASONING =
+  "A considered combination built around restraint. The ivory crew reads effortless against the charcoal weight below — clean contrast, no aggression.";
+const FALLBACK_ITEMS: OutfitItem[] = [
+  { id: "a", name: "Camel wool coat",    type: "OUTERWEAR", color: "Camel",  image_url: null },
+  { id: "b", name: "Ivory ribbed crew",  type: "KNITWEAR",  color: "Ivory",  image_url: null },
+  { id: "c", name: "Pleated wide-leg",   type: "TROUSERS",  color: "Slate",  image_url: null },
+];
 
 const TILE_GRADS = [
   "linear-gradient(158deg,#3a3a38 0%,#8c8b85 50%,#c8c7c0 100%)",
@@ -45,6 +59,20 @@ export default function OutfitPage() {
   const [saving, setSaving] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [outfit, setOutfit] = useState<OutfitData | null>(null);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem("mirror_outfit");
+    if (stored) {
+      try {
+        setOutfit(JSON.parse(stored));
+      } catch { /* use fallback */ }
+    }
+  }, []);
+
+  const displayName = outfit?.outfit_name || FALLBACK_NAME;
+  const displayReasoning = outfit?.reasoning || FALLBACK_REASONING;
+  const displayItems = outfit?.items?.length ? outfit.items : FALLBACK_ITEMS;
 
   const handleWearingThis = useCallback(async () => {
     if (saving || confirmed || !userId) return;
@@ -55,18 +83,34 @@ export default function OutfitPage() {
         .from("outfit_suggestions")
         .insert({
           user_id: userId,
-          items: PIECES.map((p) => p.name),
-          reasoning: REASONING,
+          items: displayItems.map((p) => p.name),
+          reasoning: displayReasoning,
           worn: true,
         });
       if (sbError) throw sbError;
       setConfirmed(true);
+      sessionStorage.removeItem("mirror_outfit");
     } catch {
       setError("Couldn't save. Try again.");
     } finally {
       setSaving(false);
     }
-  }, [saving, confirmed]);
+  }, [saving, confirmed, userId, displayItems, displayReasoning]);
+
+  const handleShuffle = useCallback(async () => {
+    sessionStorage.removeItem("mirror_outfit");
+    setOutfit(null);
+    setConfirmed(false);
+    setError(null);
+    try {
+      const res = await fetch("/api/outfit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+      const data = await res.json();
+      if (!data.error) {
+        sessionStorage.setItem("mirror_outfit", JSON.stringify(data));
+        setOutfit(data);
+      }
+    } catch { /* silent */ }
+  }, []);
 
   return (
     <div
@@ -98,15 +142,7 @@ export default function OutfitPage() {
             flexShrink: 0,
           }}
         >
-          <span
-            style={{
-              ...MONO,
-              fontSize: 12,
-              fontWeight: 500,
-              letterSpacing: "0.08em",
-              color: "rgba(255,255,255,0.6)",
-            }}
-          >
+          <span style={{ ...MONO, fontSize: 12, fontWeight: 500, letterSpacing: "0.08em", color: "rgba(255,255,255,0.6)" }}>
             9:41
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -136,58 +172,21 @@ export default function OutfitPage() {
             borderBottom: "1px solid rgba(255,255,255,0.08)",
           }}
         >
-          {/* back */}
           <button
             onClick={() => router.push("/")}
             aria-label="Back"
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-              display: "flex",
-              alignItems: "center",
-            }}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center" }}
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="rgba(255,255,255,0.6)"
-              strokeWidth="1.5"
-              strokeLinecap="square"
-              aria-hidden="true"
-            >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="square" aria-hidden="true">
               <polyline points="13,4 7,10 13,16" />
             </svg>
           </button>
-
-          {/* kicker */}
-          <span
-            style={{
-              ...MONO,
-              fontSize: 9,
-              fontWeight: 500,
-              letterSpacing: "0.18em",
-              color: "rgba(255,255,255,0.45)",
-              textTransform: "uppercase",
-            }}
-          >
+          <span style={{ ...MONO, fontSize: 9, fontWeight: 500, letterSpacing: "0.18em", color: "rgba(255,255,255,0.45)", textTransform: "uppercase" }}>
             TODAY&apos;S LOOK
           </span>
-
-          {/* ⋯ more */}
           <button
             aria-label="More options"
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: "4px 2px",
-              display: "flex",
-              alignItems: "center",
-            }}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 2px", display: "flex", alignItems: "center" }}
           >
             <svg width="20" height="4" viewBox="0 0 20 4" fill="rgba(255,255,255,0.6)" aria-hidden="true">
               <circle cx="2"  cy="2" r="1.5" />
@@ -214,76 +213,53 @@ export default function OutfitPage() {
                 margin: 0,
               }}
             >
-              {OUTFIT_NAME}
+              {displayName}
             </p>
           </div>
 
-          {/* ── flat lay tile grid ──────────────────────────── */}
+          {/* ── tile grid ──────────────────────────────────────── */}
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
+              gridTemplateColumns: `repeat(${displayItems.length}, 1fr)`,
               columnGap: 8,
               padding: "24px 20px 0",
             }}
           >
-            {PIECES.map((piece, i) => (
-              <div key={i}>
-                {/* image plate */}
+            {displayItems.map((item, i) => (
+              <div key={item.id}>
                 <div
                   style={{
                     width: "100%",
                     aspectRatio: "0.75",
-                    background: TILE_GRADS[i],
+                    background: TILE_GRADS[i % TILE_GRADS.length],
                     position: "relative",
                     overflow: "hidden",
                   }}
                 >
-                  {/* fabric fold line */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      bottom: 0,
-                      left: "54%",
-                      width: 1,
-                      background: "rgba(255,255,255,0.1)",
-                    }}
-                  />
+                  {item.image_url ? (
+                    <img
+                      src={item.image_url}
+                      alt={item.name}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(1) contrast(1.05)", display: "block" }}
+                    />
+                  ) : (
+                    <div style={{ position: "absolute", top: 0, bottom: 0, left: "54%", width: 1, background: "rgba(255,255,255,0.1)" }} />
+                  )}
                 </div>
-                {/* metadata */}
                 <div style={{ paddingTop: 8 }}>
-                  <span
-                    style={{
-                      ...MONO,
-                      fontSize: 8,
-                      letterSpacing: "0.14em",
-                      color: "rgba(255,255,255,0.38)",
-                      textTransform: "uppercase",
-                      display: "block",
-                    }}
-                  >
-                    {piece.type}
+                  <span style={{ ...MONO, fontSize: 8, letterSpacing: "0.14em", color: "rgba(255,255,255,0.38)", textTransform: "uppercase", display: "block" }}>
+                    {item.type.toUpperCase()}
                   </span>
-                  <p
-                    style={{
-                      ...SERIF,
-                      fontSize: 13,
-                      fontWeight: 500,
-                      lineHeight: 1.15,
-                      letterSpacing: "-0.005em",
-                      color: "rgba(255,255,255,0.9)",
-                      margin: "3px 0 0",
-                    }}
-                  >
-                    {piece.name}
+                  <p style={{ ...SERIF, fontSize: 13, fontWeight: 500, lineHeight: 1.15, letterSpacing: "-0.005em", color: "rgba(255,255,255,0.9)", margin: "3px 0 0" }}>
+                    {item.name}
                   </p>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* ── styling note ────────────────────────────────── */}
+          {/* ── styling note ─────────────────────────────────── */}
           <div style={{ padding: "28px 20px 0" }}>
             <div style={{ height: 1, background: "rgba(255,255,255,0.08)", marginBottom: 20 }} />
             <p
@@ -298,40 +274,21 @@ export default function OutfitPage() {
                 margin: 0,
               }}
             >
-              &ldquo;{REASONING}&rdquo;
+              &ldquo;{displayReasoning}&rdquo;
             </p>
           </div>
 
-          {/* ── action area ─────────────────────────────────── */}
+          {/* ── action area ──────────────────────────────────── */}
           <div style={{ padding: "28px 20px 0" }}>
             <div style={{ height: 1, background: "rgba(255,255,255,0.08)", marginBottom: 24 }} />
 
             {confirmed ? (
-              /* confirmation state */
-              <div
-                style={{
-                  height: 56,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  border: "1px solid rgba(255,255,255,0.16)",
-                }}
-              >
-                <span
-                  style={{
-                    ...MONO,
-                    fontSize: 13,
-                    fontWeight: 500,
-                    letterSpacing: "0.18em",
-                    color: "#2F7D5B",
-                    textTransform: "uppercase",
-                  }}
-                >
+              <div style={{ height: 56, display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.16)" }}>
+                <span style={{ ...MONO, fontSize: 13, fontWeight: 500, letterSpacing: "0.18em", color: "#2F7D5B", textTransform: "uppercase" }}>
                   Noted.
                 </span>
               </div>
             ) : (
-              /* primary CTA */
               <button
                 type="button"
                 onClick={handleWearingThis}
@@ -355,43 +312,19 @@ export default function OutfitPage() {
               </button>
             )}
 
-            {/* error */}
             {error && (
-              <p
-                style={{
-                  ...MONO,
-                  fontSize: 10,
-                  color: "#B23A33",
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  marginTop: 10,
-                  marginBottom: 0,
-                }}
-              >
+              <p style={{ ...MONO, fontSize: 10, color: "#B23A33", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 10, marginBottom: 0 }}>
                 {error}
               </p>
             )}
 
-            {/* subtitle */}
-            <p
-              style={{
-                ...MONO,
-                fontSize: 10,
-                letterSpacing: "0.1em",
-                color: "rgba(255,255,255,0.3)",
-                textTransform: "uppercase",
-                textAlign: "center",
-                margin: "14px 0 16px",
-                lineHeight: 1.5,
-              }}
-            >
+            <p style={{ ...MONO, fontSize: 10, letterSpacing: "0.1em", color: "rgba(255,255,255,0.3)", textTransform: "uppercase", textAlign: "center", margin: "14px 0 16px", lineHeight: 1.5 }}>
               Each outfit you confirm helps Mirror dress you better.
             </p>
 
-            {/* shuffle */}
             <button
               type="button"
-              onClick={() => router.refresh()}
+              onClick={handleShuffle}
               style={{
                 ...SANS,
                 width: "100%",
@@ -411,17 +344,7 @@ export default function OutfitPage() {
                 transition: "border-color 0.18s cubic-bezier(0.22,1,0.36,1)",
               }}
             >
-              {/* shuffle icon */}
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                stroke="rgba(255,255,255,0.7)"
-                strokeWidth="1.5"
-                strokeLinecap="square"
-                aria-hidden="true"
-              >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="square" aria-hidden="true">
                 <polyline points="10,1 13,4 10,7" />
                 <path d="M1 4h8a4 4 0 0 1 4 4" />
                 <polyline points="4,13 1,10 4,7" />
