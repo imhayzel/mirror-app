@@ -19,6 +19,46 @@ async function logUsage(userId: string, feature: string) {
   await supabase.from('ai_usage').insert({ user_id: userId, feature })
 }
 
+const IMAGE_EXT_RE = /\.(jpe?g|png|webp|gif)(\?.*)?$/i
+const VALID_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+
+async function extractProductImageUrl(pageUrl: string): Promise<string | null> {
+  try {
+    const res = await fetch(pageUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' },
+      signal: AbortSignal.timeout(8000),
+    })
+    const html = await res.text()
+    const ogMatch =
+      html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ||
+      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i)
+    if (ogMatch?.[1]) return ogMatch[1]
+    const imgMatch = html.match(/<img[^>]+src=["'](https[^"']+\.(?:jpe?g|png|webp))["']/i)
+    return imgMatch?.[1] ?? null
+  } catch {
+    return null
+  }
+}
+
+async function fetchImageAsBase64(url: string): Promise<{ base64: string; mimeType: string; resolvedUrl: string } | null> {
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' },
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!res.ok) return null
+    const buffer = await res.arrayBuffer()
+    const base64 = Buffer.from(buffer).toString('base64')
+    const contentType = res.headers.get('content-type') || ''
+    const mimeType = VALID_MIME.has(contentType.split(';')[0].trim())
+      ? contentType.split(';')[0].trim()
+      : 'image/jpeg'
+    return { base64, mimeType, resolvedUrl: url }
+  } catch {
+    return null
+  }
+}
+
 export async function POST(req: NextRequest) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -32,18 +72,55 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Provide imageBase64 or imageUrl' }, { status: 400 })
   }
 
-  const imageSource = imageBase64
-    ? { type: 'base64' as const, media_type: ((mimeType || 'image/jpeg') as Anthropic.Base64ImageSource['media_type']), data: imageBase64 as string }
-    : { type: 'url' as const, url: imageUrl as string }
+  let resolvedBase64: string
+  let resolvedMimeType: string
+  let resolvedImageUrl: string | null = null
+
+  if (imageBase64) {
+    resolvedBase64 = imageBase64 as string
+    resolvedMimeType = (mimeType as string) || 'image/jpeg'
+  } else {
+    // Determine if it's a direct image URL or a product page
+    const isDirectImage = IMAGE_EXT_RE.test(imageUrl as string)
+    let imageToFetch = imageUrl as string
+
+    if (!isDirectImage) {
+      // Extract og:image from the product page
+      const extracted = await extractProductImageUrl(imageUrl as string)
+      if (!extracted) {
+        return NextResponse.json(
+          { error: 'Could not extract an image from that URL. Try pasting a direct image URL instead.' },
+          { status: 400 }
+        )
+      }
+      imageToFetch = extracted
+    }
+
+    // Fetch and convert to base64 (avoids Anthropic URL download failures)
+    const fetched = await fetchImageAsBase64(imageToFetch)
+    if (!fetched) {
+      return NextResponse.json({ error: 'Could not load the image. Try a different URL.' }, { status: 400 })
+    }
+    resolvedBase64 = fetched.base64
+    resolvedMimeType = fetched.mimeType
+    resolvedImageUrl = fetched.resolvedUrl
+  }
 
   try {
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-5',
-      max_tokens: 1000,
+      max_tokens: 300,
       messages: [{
         role: 'user',
         content: [
-          { type: 'image', source: imageSource },
+          {
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: resolvedMimeType as Anthropic.Base64ImageSource['media_type'],
+              data: resolvedBase64,
+            },
+          },
           {
             type: 'text',
             text: 'You are a fashion expert. Look at this clothing item and extract:\n1. name: short descriptive name (2-4 words, e.g. "Camel wool coat")\n2. type: one of TOP, BOTTOM, OUTERWEAR, SHOES, ACCESSORY\n3. color: primary color (e.g. "Camel", "Navy", "Ivory")\n\nRespond with ONLY valid JSON, no other text: {"name": "...", "type": "...", "color": "..."}'
@@ -58,11 +135,12 @@ export async function POST(req: NextRequest) {
 
     const data = JSON.parse(match[0])
     data.type = (data.type as string).toLowerCase()
+    if (resolvedImageUrl) data.image_url = resolvedImageUrl
 
     await logUsage(userId, 'categorize')
     return NextResponse.json(data)
   } catch (err) {
-    console.error('[categorize]', err)
+    console.error('[categorize] Anthropic error:', err)
     return NextResponse.json({ error: 'AI analysis failed' }, { status: 500 })
   }
 }

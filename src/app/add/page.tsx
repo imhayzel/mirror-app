@@ -103,6 +103,11 @@ export default function AddPage() {
         if (data.name) setName(data.name);
         if (data.type) setType(data.type as ItemType);
         if (data.color) setColor(data.color);
+        // If a product URL was scrapped, update the preview with the resolved image URL
+        if (data.image_url) {
+          setImagePreview(data.image_url);
+          setImageUrl(data.image_url);
+        }
       }
     } catch {
       setError("Couldn't analyse image. Fill in the details manually.");
