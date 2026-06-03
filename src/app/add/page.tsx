@@ -375,8 +375,9 @@ export default function AddPage() {
                     placeholder="https://..."
                     value={urlInput}
                     onChange={e => setUrlInput(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && handleUrlCommit()}
+                    onKeyDown={e => e.key === "Enter" && !categorizing && handleUrlCommit()}
                     autoFocus
+                    disabled={categorizing}
                     style={{
                       ...SANS,
                       flex: 1,
@@ -386,25 +387,27 @@ export default function AddPage() {
                       fontSize: 14,
                       padding: 0,
                       outline: "none",
+                      opacity: categorizing ? 0.4 : 1,
                     }}
                   />
                   <button
                     type="button"
                     onClick={handleUrlCommit}
+                    disabled={categorizing}
                     style={{
                       ...MONO,
                       background: "transparent",
                       border: "none",
-                      color: "rgba(255,255,255,0.55)",
+                      color: categorizing ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.55)",
                       fontSize: 10,
                       letterSpacing: "0.14em",
                       textTransform: "uppercase",
-                      cursor: "pointer",
+                      cursor: categorizing ? "default" : "pointer",
                       padding: 0,
                       flexShrink: 0,
                     }}
                   >
-                    LOAD →
+                    {categorizing ? "LOADING..." : "LOAD →"}
                   </button>
                 </div>
               </div>
@@ -575,20 +578,19 @@ export default function AddPage() {
               />
             </div>
 
-            {/* error */}
-            {error && (
+            {/* status / error */}
+            {(categorizing || error) && (
               <p
                 style={{
                   ...MONO,
                   fontSize: 10,
                   letterSpacing: "0.1em",
-                  color: "#B23A33",
+                  color: categorizing ? "rgba(255,255,255,0.45)" : "#B23A33",
                   textTransform: "uppercase",
-                  marginBottom: 16,
                   margin: "0 0 16px",
                 }}
               >
-                {error}
+                {categorizing ? "ANALYSING..." : error}
               </p>
             )}
 

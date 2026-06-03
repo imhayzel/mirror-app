@@ -134,7 +134,10 @@ export async function POST(req: NextRequest) {
    - BOTTOM: trousers, jeans, shorts, skirts, leggings, tights
    - SHOES: all footwear — sneakers, boots, heels, sandals, loafers
    - ACCESSORY: bags, scarves, hats, jewellery, belts, sunglasses
-3. color: primary color (e.g. "Camel", "Navy", "Ivory", "Black")
+3. color: describe the color specifically:
+   - Solid: use the precise shade, not a generic name — e.g. "Forest Green" not "Green", "Cobalt Blue" not "Blue", "Camel" not "Brown", "Ecru" not "White", "Slate" not "Grey"
+   - Striped or patterned: name the pattern — e.g. "Cream Stripe", "Navy Stripe", "Checked Brown"
+   - Multicolor or print: name the two dominant colors — e.g. "Black and White", "Red and Navy"
 
 Respond with ONLY valid JSON, no other text: {"name": "...", "type": "...", "color": "..."}`
           }
