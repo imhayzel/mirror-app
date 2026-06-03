@@ -50,27 +50,32 @@ export async function POST(req: NextRequest) {
     ? `Context/occasion: ${context}`
     : 'Suggest a complete outfit for today.'
 
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1000,
-    messages: [{
-      role: 'user',
-      content: `You are Mirror, a personal stylist with a minimal, editorial sensibility. The user has these wardrobe items:\n${itemList}\n\n${contextLine}\n\nRules:\n- Pick 3-4 items that work well together\n- Must include at least one top and one bottom (or a dress/jumpsuit as substitute)\n- Consider color harmony and the context\n- Outfit name: short, poetic, 4-5 words, no punctuation\n- Reasoning: 1-2 sentences, fashion editor voice, no exclamation marks\n\nRespond with ONLY valid JSON, no other text:\n{"outfit_name": "...", "item_ids": ["id1", "id2", "id3"], "reasoning": "..."}`
-    }]
-  })
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: `You are Mirror, a personal stylist with a minimal, editorial sensibility. The user has these wardrobe items:\n${itemList}\n\n${contextLine}\n\nRules:\n- Pick 3-4 items that work well together\n- Must include at least one top and one bottom (or a dress/jumpsuit as substitute)\n- Consider color harmony and the context\n- Outfit name: short, poetic, 4-5 words, no punctuation\n- Reasoning: 1-2 sentences, fashion editor voice, no exclamation marks\n\nRespond with ONLY valid JSON, no other text:\n{"outfit_name": "...", "item_ids": ["id1", "id2", "id3"], "reasoning": "..."}`
+      }]
+    })
 
-  const text = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
-  const match = text.match(/\{[\s\S]*\}/)
-  if (!match) return NextResponse.json({ error: 'Failed to parse response' }, { status: 500 })
+    const text = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
+    const match = text.match(/\{[\s\S]*\}/)
+    if (!match) return NextResponse.json({ error: 'Failed to parse response' }, { status: 500 })
 
-  const parsed = JSON.parse(match[0])
-  const selectedItems = (items as WardrobeRow[]).filter(i => (parsed.item_ids as string[]).includes(i.id))
+    const parsed = JSON.parse(match[0])
+    const selectedItems = (items as WardrobeRow[]).filter(i => (parsed.item_ids as string[]).includes(i.id))
 
-  await logUsage(userId, 'outfit')
+    await logUsage(userId, 'outfit')
 
-  return NextResponse.json({
-    outfit_name: parsed.outfit_name as string,
-    reasoning: parsed.reasoning as string,
-    items: selectedItems,
-  })
+    return NextResponse.json({
+      outfit_name: parsed.outfit_name as string,
+      reasoning: parsed.reasoning as string,
+      items: selectedItems,
+    })
+  } catch (err) {
+    console.error('[outfit]', err)
+    return NextResponse.json({ error: 'AI analysis failed' }, { status: 500 })
+  }
 }

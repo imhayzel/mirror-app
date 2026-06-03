@@ -87,24 +87,26 @@ export default function AddPage() {
 
   const runCategorize = useCallback(async (base64?: string, mime?: string, url?: string) => {
     setCategorizing(true);
+    setError(null);
     try {
       const res = await fetch('/api/categorize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(base64 ? { imageBase64: base64, mimeType: mime } : { imageUrl: url }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.error === 'daily_limit_reached') {
-          setError("You've had five looks today. Come back tomorrow.");
-        } else {
-          if (data.name) setName(data.name);
-          if (data.type) setType(data.type as ItemType);
-          if (data.color) setColor(data.color);
-        }
+      const data = await res.json();
+      if (data.error === 'daily_limit_reached') {
+        setError("You've had five looks today. Come back tomorrow.");
+      } else if (data.error) {
+        setError("Couldn't analyse image. Fill in the details manually.");
+      } else {
+        if (data.name) setName(data.name);
+        if (data.type) setType(data.type as ItemType);
+        if (data.color) setColor(data.color);
       }
-    } catch { /* silent — user can fill manually */ }
-    finally {
+    } catch {
+      setError("Couldn't analyse image. Fill in the details manually.");
+    } finally {
       setCategorizing(false);
     }
   }, []);

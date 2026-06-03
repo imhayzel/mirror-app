@@ -78,27 +78,32 @@ export async function POST(req: NextRequest) {
     imageSource = { type: 'url', url: imageUrl }
   }
 
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1000,
-    messages: [{
-      role: 'user',
-      content: [
-        { type: 'image', source: imageSource },
-        {
-          type: 'text',
-          text: `${wardrobeContext}\n\nLook at the item in this image. Should the user BUY or SKIP it?\n\nConsider: does it complement their wardrobe, fill a real gap, or just duplicate what they already own?\n\nRespond with ONLY valid JSON, no other text:\n{"verdict": "BUY", "reasoning": "2-3 sentences, fashion editor voice, no exclamation marks", "pairs_with": ["existing item name 1", "existing item name 2"]}\nor\n{"verdict": "SKIP", "reasoning": "...", "pairs_with": []}`
-        }
-      ]
-    }]
-  })
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: imageSource },
+          {
+            type: 'text',
+            text: `${wardrobeContext}\n\nLook at the item in this image. Should the user BUY or SKIP it?\n\nConsider: does it complement their wardrobe, fill a real gap, or just duplicate what they already own?\n\nRespond with ONLY valid JSON, no other text:\n{"verdict": "BUY", "reasoning": "2-3 sentences, fashion editor voice, no exclamation marks", "pairs_with": ["existing item name 1", "existing item name 2"]}\nor\n{"verdict": "SKIP", "reasoning": "...", "pairs_with": []}`
+          }
+        ]
+      }]
+    })
 
-  const text = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
-  const match = text.match(/\{[\s\S]*\}/)
-  if (!match) return NextResponse.json({ error: 'Failed to parse response' }, { status: 500 })
+    const text = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
+    const match = text.match(/\{[\s\S]*\}/)
+    if (!match) return NextResponse.json({ error: 'Failed to parse response' }, { status: 500 })
 
-  const data = JSON.parse(match[0])
-  await logUsage(userId, 'checker')
+    const data = JSON.parse(match[0])
+    await logUsage(userId, 'checker')
 
-  return NextResponse.json(data)
+    return NextResponse.json(data)
+  } catch (err) {
+    console.error('[checker]', err)
+    return NextResponse.json({ error: 'AI analysis failed' }, { status: 500 })
+  }
 }

@@ -36,28 +36,33 @@ export async function POST(req: NextRequest) {
     ? { type: 'base64' as const, media_type: ((mimeType || 'image/jpeg') as Anthropic.Base64ImageSource['media_type']), data: imageBase64 as string }
     : { type: 'url' as const, url: imageUrl as string }
 
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1000,
-    messages: [{
-      role: 'user',
-      content: [
-        { type: 'image', source: imageSource },
-        {
-          type: 'text',
-          text: 'You are a fashion expert. Look at this clothing item and extract:\n1. name: short descriptive name (2-4 words, e.g. "Camel wool coat")\n2. type: one of TOP, BOTTOM, OUTERWEAR, SHOES, ACCESSORY\n3. color: primary color (e.g. "Camel", "Navy", "Ivory")\n\nRespond with ONLY valid JSON, no other text: {"name": "...", "type": "...", "color": "..."}'
-        }
-      ]
-    }]
-  })
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: imageSource },
+          {
+            type: 'text',
+            text: 'You are a fashion expert. Look at this clothing item and extract:\n1. name: short descriptive name (2-4 words, e.g. "Camel wool coat")\n2. type: one of TOP, BOTTOM, OUTERWEAR, SHOES, ACCESSORY\n3. color: primary color (e.g. "Camel", "Navy", "Ivory")\n\nRespond with ONLY valid JSON, no other text: {"name": "...", "type": "...", "color": "..."}'
+          }
+        ]
+      }]
+    })
 
-  const text = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
-  const match = text.match(/\{[\s\S]*?\}/)
-  if (!match) return NextResponse.json({ error: 'Failed to parse response' }, { status: 500 })
+    const text = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
+    const match = text.match(/\{[\s\S]*?\}/)
+    if (!match) return NextResponse.json({ error: 'Failed to parse response' }, { status: 500 })
 
-  const data = JSON.parse(match[0])
-  data.type = (data.type as string).toLowerCase()
+    const data = JSON.parse(match[0])
+    data.type = (data.type as string).toLowerCase()
 
-  await logUsage(userId, 'categorize')
-  return NextResponse.json(data)
+    await logUsage(userId, 'categorize')
+    return NextResponse.json(data)
+  } catch (err) {
+    console.error('[categorize]', err)
+    return NextResponse.json({ error: 'AI analysis failed' }, { status: 500 })
+  }
 }

@@ -49,29 +49,34 @@ export async function POST() {
     })
     .join('\n')
 
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1000,
-    messages: [{
-      role: 'user',
-      content: `You are Mirror, a fashion stylist. Analyze this user's wardrobe and generate a style profile.\n\nWardrobe:\n${itemList}\n\nGenerate:\n1. archetype: 3-4 word style identity starting with "The" (e.g. "The Quiet Minimalist")\n2. descriptors: exactly 3 single-word UPPERCASE style descriptors\n3. dominant_colors: 3-5 UPPERCASE color names that dominate the wardrobe\n\nRespond with ONLY valid JSON, no other text:\n{"archetype": "The ...", "descriptors": ["...", "...", "..."], "dominant_colors": ["...", "...", "..."]}`
-    }]
-  })
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: `You are Mirror, a fashion stylist. Analyze this user's wardrobe and generate a style profile.\n\nWardrobe:\n${itemList}\n\nGenerate:\n1. archetype: 3-4 word style identity starting with "The" (e.g. "The Quiet Minimalist")\n2. descriptors: exactly 3 single-word UPPERCASE style descriptors\n3. dominant_colors: 3-5 UPPERCASE color names that dominate the wardrobe\n\nRespond with ONLY valid JSON, no other text:\n{"archetype": "The ...", "descriptors": ["...", "...", "..."], "dominant_colors": ["...", "...", "..."]}`
+      }]
+    })
 
-  const text = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
-  const match = text.match(/\{[\s\S]*\}/)
-  if (!match) return NextResponse.json({ error: 'Failed to parse response' }, { status: 500 })
+    const text = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
+    const match = text.match(/\{[\s\S]*\}/)
+    if (!match) return NextResponse.json({ error: 'Failed to parse response' }, { status: 500 })
 
-  const data = JSON.parse(match[0])
+    const data = JSON.parse(match[0])
 
-  await supabase
-    .from('style_profiles')
-    .upsert(
-      { user_id: userId, archetype: data.archetype, descriptors: data.descriptors, updated_at: new Date().toISOString() },
-      { onConflict: 'user_id' }
-    )
+    await supabase
+      .from('style_profiles')
+      .upsert(
+        { user_id: userId, archetype: data.archetype, descriptors: data.descriptors, updated_at: new Date().toISOString() },
+        { onConflict: 'user_id' }
+      )
 
-  await logUsage(userId, 'style_profile')
+    await logUsage(userId, 'style_profile')
 
-  return NextResponse.json(data)
+    return NextResponse.json(data)
+  } catch (err) {
+    console.error('[style-profile]', err)
+    return NextResponse.json({ error: 'AI analysis failed' }, { status: 500 })
+  }
 }
