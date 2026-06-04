@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { getItem, updateItem, deleteItem, WardrobeItem } from "@/lib/wardrobe";
+import { updateItem, deleteItem, WardrobeItem } from "@/lib/wardrobe";
 import BottomNav from "@/components/BottomNav";
 
 // ─── descriptor groups ────────────────────────────────────────────────────────
@@ -270,7 +270,11 @@ export default function ItemDetailPage({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getItem(params.id)
+    fetch(`/api/wardrobe/${params.id}`)
+      .then(async r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then((data) => {
         setItem(data);
         setEditName(data.name);

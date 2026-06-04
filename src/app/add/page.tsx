@@ -125,6 +125,23 @@ export default function AddPage() {
     setImagePreview(URL.createObjectURL(file));
     setImageUrl(null);
     setError(null);
+
+    // Upload to Supabase Storage for a persistent URL
+    const formData = new FormData();
+    formData.append('file', file);
+    fetch('/api/upload', { method: 'POST', body: formData })
+      .then(async r => {
+        const data = await r.json();
+        if (data.url) {
+          setImageUrl(data.url);
+          setImagePreview(data.url);
+        } else {
+          console.error('[add] Storage upload failed:', data.error);
+        }
+      })
+      .catch(err => console.error('[add] Storage upload error:', err));
+
+    // Categorize with base64 for AI field filling (runs in parallel)
     const reader = new FileReader();
     reader.onload = (evt) => {
       const result = evt.target?.result as string;
