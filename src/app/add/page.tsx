@@ -72,6 +72,7 @@ export default function AddPage() {
   const [name, setName] = useState("");
   const [type, setType] = useState<ItemType | null>(null);
   const [color, setColor] = useState("");
+  const [descriptors, setDescriptors] = useState<string[]>([]);
 
   // ai state
   const [categorizing, setCategorizing] = useState(false);
@@ -101,6 +102,7 @@ export default function AddPage() {
         if (data.name) setName(data.name);
         if (data.type) setType(data.type as ItemType);
         if (data.color) setColor(data.color);
+        if (Array.isArray(data.descriptors)) setDescriptors(data.descriptors as string[]);
         // Update preview with the resolved product image URL
         if (data.image_url) {
           setImagePreview(data.image_url);
@@ -178,6 +180,7 @@ export default function AddPage() {
           type,
           color: color.trim() || null,
           image_url: imageUrl,
+          descriptors,
         }),
       });
       if (!res.ok) {
