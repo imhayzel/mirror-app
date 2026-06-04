@@ -134,8 +134,16 @@ export async function POST(req: NextRequest) {
    - BOTTOM: trousers, jeans, shorts, skirts, leggings, tights
    - SHOES: all footwear — sneakers, boots, heels, sandals, loafers
    - ACCESSORY: bags, scarves, hats, jewellery, belts, sunglasses
-3. color: describe the color specifically:
-   - Solid: use the precise shade — e.g. "Forest Green" not "Green", "Burgundy" not "Red", "Cobalt Blue" not "Blue", "Camel" not "Brown", "Ecru" not "White", "Slate" not "Grey", "Mustard" not "Yellow"
+3. color: Determine the color by VISUALLY ANALYZING the image only. Do not read or use the product name, text overlays, watermarks, or any written description to determine color — look only at the actual fabric/material in the image. If the item visually appears grey, call it grey even if the product is named "Sage Green".
+   - Greys: Ash Grey, Light Grey, Charcoal, Stone, Slate, Off-White
+   - Whites/creams: White, Ivory, Ecru, Cream
+   - Browns/neutrals: Chocolate Brown, Dark Brown, Camel, Tan, Hazel, Beige, Sand
+   - Blacks: Black, Faded Black
+   - Blues: Navy, Cobalt Blue, Sky Blue, Denim Blue, Royal Blue
+   - Greens: Sage Green, Forest Green, Olive, Khaki, Mint
+   - Reds/pinks: Burgundy, Wine, Red, Coral, Blush, Pink
+   - Yellows/oranges: Mustard, Yellow, Ochre, Orange, Rust
+   - Purples: Lavender, Lilac, Purple, Plum
    - Striped: "Cream Stripe", "Navy Stripe", "Black and White Stripe"
    - Checked/plaid: "Navy Check", "Camel Check", "Green Plaid"
    - Multi-color or print: name the two dominant colors — e.g. "Black and White", "Red and Navy"
