@@ -105,6 +105,7 @@ export default function AddPage() {
         if (data.image_url) {
           setImagePreview(data.image_url);
           setImageUrl(data.image_url);
+          setError(null); // clear any stale intermediate error
         }
         // Only show an error if we got nothing useful at all
         if (!data.name && !data.image_url) {
@@ -136,8 +137,6 @@ export default function AddPage() {
   const handleUrlCommit = useCallback(() => {
     const trimmed = urlInput.trim();
     if (!trimmed) return;
-    setImagePreview(trimmed);
-    setImageUrl(trimmed);
     setError(null);
     runCategorize(undefined, undefined, trimmed);
   }, [urlInput, runCategorize]);
@@ -299,7 +298,7 @@ export default function AddPage() {
           <div style={{ padding: "28px 24px 0" }}>
 
             {/* two equal-weight input options */}
-            {!imagePreview && (
+            {!imagePreview && !categorizing && (
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
 
                 {/* Upload */}
@@ -358,8 +357,25 @@ export default function AddPage() {
               </div>
             )}
 
+            {/* ANALYSING... state for URL flow — no image box, just text */}
+            {categorizing && !imagePreview && (
+              <div style={{ padding: "14px 0" }}>
+                <span
+                  style={{
+                    ...MONO,
+                    fontSize: 10,
+                    letterSpacing: "0.16em",
+                    color: "rgba(255,255,255,0.45)",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  ANALYSING...
+                </span>
+              </div>
+            )}
+
             {/* URL input — shown inline below the buttons */}
-            {imageMode === "url" && !imagePreview && (
+            {imageMode === "url" && !imagePreview && !categorizing && (
               <div style={{ marginTop: 16 }}>
                 <div
                   style={{
