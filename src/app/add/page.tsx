@@ -407,7 +407,7 @@ export default function AddPage() {
                       flexShrink: 0,
                     }}
                   >
-                    {categorizing ? "LOADING..." : "LOAD →"}
+                    {categorizing ? "ANALYSING..." : "LOAD →"}
                   </button>
                 </div>
               </div>

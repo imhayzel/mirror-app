@@ -270,9 +270,15 @@ export default function ClosetPage() {
 
   useEffect(() => {
     if (!userId) return;
+    setLoading(true);
     fetch('/api/wardrobe')
-      .then(r => r.json())
-      .then(setItems)
+      .then(async r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then(data => {
+        if (Array.isArray(data)) setItems(data);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [userId]);
