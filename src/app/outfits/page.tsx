@@ -17,13 +17,19 @@ type OutfitItem = {
 
 type OutfitSuggestion = {
   id: string;
-  items: OutfitItem[] | null;
+  items: (OutfitItem | string)[] | null;
   reasoning: string | null;
   worn: boolean | null;
   created_at: string;
 };
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
+
+// Handles legacy DB records where items were stored as plain strings
+function normalizeItem(item: OutfitItem | string): OutfitItem {
+  if (typeof item === 'string') return { id: '', name: item, type: '', color: null, image_url: null };
+  return item;
+}
 
 const TILE_GRADS = [
   "linear-gradient(158deg,#3a3a38 0%,#8c8b85 50%,#c8c7c0 100%)",
@@ -35,7 +41,7 @@ const TILE_GRADS = [
 ];
 
 function outfitLabel(outfit: OutfitSuggestion): string {
-  const items = outfit.items ?? [];
+  const items = (outfit.items ?? []).map(normalizeItem);
   if (items.length >= 2) return `${items[0].name} × ${items[1].name}`;
   if (items.length === 1) return items[0].name;
   return "Untitled look";
@@ -63,7 +69,7 @@ const SANS: React.CSSProperties = {
 
 function OutfitCard({ outfit, idx }: { outfit: OutfitSuggestion; idx: number }) {
   const router = useRouter();
-  const items = outfit.items ?? [];
+  const items = (outfit.items ?? []).map(normalizeItem);
   const hasImages = items.some((i) => i.image_url);
 
   const handleTap = useCallback(() => {
@@ -240,7 +246,12 @@ export default function OutfitsPage() {
       .then(async (res) => {
         if (!res.ok) { console.error("[outfits] fetch error:", await res.text()); return; }
         const data = await res.json();
-        if (Array.isArray(data)) setOutfits(data as OutfitSuggestion[]);
+        if (Array.isArray(data)) {
+          setOutfits(data.map((o: OutfitSuggestion) => ({
+            ...o,
+            items: (o.items ?? []).map(normalizeItem),
+          })));
+        }
       })
       .catch((err) => console.error("[outfits] network error:", err))
       .finally(() => setLoading(false));

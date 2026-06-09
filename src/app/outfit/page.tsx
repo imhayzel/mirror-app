@@ -87,7 +87,16 @@ export default function OutfitPage() {
       const stored = sessionStorage.getItem("mirror_outfit");
       if (stored) {
         try {
-          setOutfit(JSON.parse(stored));
+          const raw = JSON.parse(stored);
+          // Normalize legacy string items → OutfitItem objects
+          if (Array.isArray(raw.items)) {
+            raw.items = raw.items.map((item: OutfitItem | string) =>
+              typeof item === 'string'
+                ? { id: '', name: item, type: '', color: null, image_url: null }
+                : item
+            );
+          }
+          setOutfit(raw as OutfitData);
         } catch { /* use fallback */ }
       }
     }
