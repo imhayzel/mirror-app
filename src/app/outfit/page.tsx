@@ -69,6 +69,7 @@ export default function OutfitPage() {
     if (anchor) {
       // Anchor flow: generate outfit built around the selected item
       setGenerating(true);
+      setOutfit(null);
       fetch("/api/outfit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
