@@ -313,7 +313,7 @@ export default function OutfitPage() {
                 </div>
                 <div style={{ paddingTop: 8 }}>
                   <span style={{ ...MONO, fontSize: 8, letterSpacing: "0.14em", color: "rgba(255,255,255,0.38)", textTransform: "uppercase", display: "block" }}>
-                    {item.type.toUpperCase()}
+                    {item.type?.toUpperCase() ?? ''}
                   </span>
                   <p style={{ ...SERIF, fontSize: 13, fontWeight: 500, lineHeight: 1.15, letterSpacing: "-0.005em", color: "rgba(255,255,255,0.9)", margin: "3px 0 0" }}>
                     {item.name}
