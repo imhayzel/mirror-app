@@ -82,8 +82,8 @@ function ChoiceRow({
       }}
     >
       <span
+        className="font-display italic"
         style={{
-          ...SERIF,
           fontSize: 17,
           fontWeight: 500,
           lineHeight: 1.2,
