@@ -388,7 +388,8 @@ export default function HomePage() {
     if (wardrobeEmpty) { router.push("/closet"); return; }
     if (outfitReady) { router.push("/outfit"); return; }
     if (outfitError) { handleRetry(); return; }
-  }, [wardrobeEmpty, outfitReady, outfitError, router, handleRetry]);
+    if (!generatingOutfit) { handleGenerateOutfit(); }
+  }, [wardrobeEmpty, outfitReady, outfitError, generatingOutfit, router, handleRetry, handleGenerateOutfit]);
 
   const handleVibeSubmit = useCallback((text: string) => {
     setVibeOpen(false);
