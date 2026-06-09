@@ -7,22 +7,18 @@ export async function POST(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json().catch(() => ({}))
-  const { items, reasoning, outfit_name } = body
+  const { items, reasoning } = body
 
   if (!Array.isArray(items) || items.length === 0) {
     return NextResponse.json({ error: 'items required' }, { status: 400 })
   }
 
   const db = await createServerSupabaseClient()
-  const row: Record<string, unknown> = {
-    user_id: userId,
-    items,
-    reasoning: reasoning ?? '',
-    worn: true,
-  }
-  if (outfit_name) row.outfit_name = outfit_name
-
-  const { data, error } = await db.from('outfit_suggestions').insert(row).select('id').single()
+  const { data, error } = await db
+    .from('outfit_suggestions')
+    .insert({ user_id: userId, items, reasoning: reasoning ?? '', worn: true })
+    .select('id')
+    .single()
 
   if (error) {
     console.error('[outfit/confirm] insert failed', { userId, error: error.message, code: error.code, details: error.details })

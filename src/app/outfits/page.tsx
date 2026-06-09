@@ -1,14 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
+type OutfitItem = {
+  id: string;
+  name: string;
+  type: string;
+  color: string | null;
+  image_url: string | null;
+};
+
 type OutfitSuggestion = {
   id: string;
-  items: string[] | null;
+  items: OutfitItem[] | null;
   reasoning: string | null;
   worn: boolean | null;
   created_at: string;
@@ -27,8 +36,8 @@ const TILE_GRADS = [
 
 function outfitLabel(outfit: OutfitSuggestion): string {
   const items = outfit.items ?? [];
-  if (items.length >= 2) return `${items[0]} × ${items[1]}`;
-  if (items.length === 1) return items[0];
+  if (items.length >= 2) return `${items[0].name} × ${items[1].name}`;
+  if (items.length === 1) return items[0].name;
   return "Untitled look";
 }
 
@@ -53,21 +62,56 @@ const SANS: React.CSSProperties = {
 // ─── OutfitCard ───────────────────────────────────────────────────────────────
 
 function OutfitCard({ outfit, idx }: { outfit: OutfitSuggestion; idx: number }) {
+  const router = useRouter();
+  const items = outfit.items ?? [];
+  const hasImages = items.some((i) => i.image_url);
+
+  const handleTap = useCallback(() => {
+    const outfitData = {
+      outfit_name: outfitLabel(outfit),
+      reasoning: outfit.reasoning ?? "",
+      items,
+    };
+    sessionStorage.setItem("mirror_outfit", JSON.stringify(outfitData));
+    router.push("/outfit");
+  }, [outfit, items, router]);
+
   return (
-    <div>
+    <div onClick={handleTap} style={{ cursor: "pointer" }}>
       {/* image plate */}
       <div
         style={{
           width: "100%",
           aspectRatio: "0.75",
-          background: TILE_GRADS[idx % TILE_GRADS.length],
           position: "relative",
           overflow: "hidden",
+          background: TILE_GRADS[idx % TILE_GRADS.length],
         }}
       >
-        {/* editorial divider lines — contact sheet feel */}
-        <div style={{ position: "absolute", top: 0, bottom: 0, left: "53%", width: 1, background: "rgba(255,255,255,0.12)" }} />
-        <div style={{ position: "absolute", top: 0, bottom: 0, left: "28%", width: 1, background: "rgba(255,255,255,0.07)" }} />
+        {hasImages ? (
+          // Side-by-side item images
+          <div style={{ position: "absolute", inset: 0, display: "flex" }}>
+            {items.slice(0, 3).map((item, i) => (
+              <div key={item.id ?? i} style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+                {item.image_url ? (
+                  <img
+                    src={item.image_url}
+                    alt={item.name}
+                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                  />
+                ) : (
+                  <div style={{ position: "absolute", inset: 0, background: TILE_GRADS[(idx + i + 1) % TILE_GRADS.length] }} />
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          // Fallback: gradient with editorial divider lines
+          <>
+            <div style={{ position: "absolute", top: 0, bottom: 0, left: "53%", width: 1, background: "rgba(255,255,255,0.12)" }} />
+            <div style={{ position: "absolute", top: 0, bottom: 0, left: "28%", width: 1, background: "rgba(255,255,255,0.07)" }} />
+          </>
+        )}
 
         {/* worn indicator */}
         {outfit.worn && (
@@ -90,30 +134,12 @@ function OutfitCard({ outfit, idx }: { outfit: OutfitSuggestion; idx: number }) 
         )}
       </div>
 
-      {/* metadata — Archivo for label, Mono for date */}
+      {/* metadata */}
       <div style={{ paddingTop: 8 }}>
-        <p
-          style={{
-            ...SANS,
-            fontSize: 13,
-            fontWeight: 500,
-            lineHeight: 1.3,
-            color: "#0E0E0E",
-            margin: "0 0 4px",
-          }}
-        >
+        <p style={{ ...SANS, fontSize: 13, fontWeight: 500, lineHeight: 1.3, color: "#0E0E0E", margin: "0 0 4px" }}>
           {outfitLabel(outfit)}
         </p>
-        <span
-          style={{
-            ...MONO,
-            fontSize: 9,
-            letterSpacing: "0.1em",
-            color: "#8C8C86",
-            textTransform: "uppercase",
-            display: "block",
-          }}
-        >
+        <span style={{ ...MONO, fontSize: 9, letterSpacing: "0.1em", color: "#8C8C86", textTransform: "uppercase", display: "block" }}>
           {formatDate(outfit.created_at)}
         </span>
       </div>

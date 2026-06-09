@@ -107,8 +107,7 @@ export default function OutfitPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          outfit_name: displayName,
-          items: displayItems.map((p) => p.name),
+          items: displayItems,
           reasoning: displayReasoning,
         }),
       });
@@ -125,7 +124,7 @@ export default function OutfitPage() {
     } finally {
       setSaving(false);
     }
-  }, [saving, confirmed, displayName, displayItems, displayReasoning]);
+  }, [saving, confirmed, displayItems, displayReasoning]);
 
   const handleShuffle = useCallback(async () => {
     sessionStorage.removeItem("mirror_outfit");
