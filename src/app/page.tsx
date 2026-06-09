@@ -224,8 +224,12 @@ function VibeSheet({
 
 export default function HomePage() {
   const router = useRouter();
-  const { userId } = useAuth();
+  const { userId, isLoaded } = useAuth();
   const dateKicker = formatDateKicker(new Date());
+
+  useEffect(() => {
+    if (isLoaded && !userId) router.replace("/sign-in");
+  }, [isLoaded, userId, router]);
 
   // outfit generation
   const [generatingOutfit, setGeneratingOutfit] = useState(false);
