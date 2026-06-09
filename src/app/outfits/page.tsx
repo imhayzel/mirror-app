@@ -31,14 +31,6 @@ function normalizeItem(item: OutfitItem | string): OutfitItem {
   return item;
 }
 
-const TILE_GRADS = [
-  "linear-gradient(158deg,#3a3a38 0%,#8c8b85 50%,#c8c7c0 100%)",
-  "linear-gradient(148deg,#2a2a28 0%,#6a6a65 48%,#aeada7 100%)",
-  "linear-gradient(162deg,#1e1e1c 0%,#57564f 46%,#9e9d97 100%)",
-  "linear-gradient(155deg,#2c2c2a 0%,#7e7d78 55%,#cbcac4 100%)",
-  "linear-gradient(150deg,#3a3a37,#86857f,#bdbcb6)",
-  "linear-gradient(160deg,#222221,#6d6c67,#a9a8a2)",
-];
 
 function outfitLabel(outfit: OutfitSuggestion): string {
   const items = (outfit.items ?? []).map(normalizeItem);
@@ -67,10 +59,13 @@ const SANS: React.CSSProperties = {
 
 // ─── OutfitCard ───────────────────────────────────────────────────────────────
 
-function OutfitCard({ outfit, idx }: { outfit: OutfitSuggestion; idx: number }) {
+function OutfitCard({ outfit }: { outfit: OutfitSuggestion }) {
   const router = useRouter();
   const items = (outfit.items ?? []).map(normalizeItem);
-  const hasImages = items.some((i) => i.image_url);
+  // Always show up to 3 columns; pad with empty placeholders if fewer items
+  const columns: OutfitItem[] = items.length > 0
+    ? items.slice(0, 3)
+    : [{ id: "", name: "", type: "", color: null, image_url: null }];
 
   const handleTap = useCallback(() => {
     const outfitData = {
@@ -84,40 +79,29 @@ function OutfitCard({ outfit, idx }: { outfit: OutfitSuggestion; idx: number }) 
 
   return (
     <div onClick={handleTap} style={{ cursor: "pointer" }}>
-      {/* image plate */}
+      {/* image plate — side-by-side columns, no background gradient */}
       <div
         style={{
           width: "100%",
           aspectRatio: "0.75",
           position: "relative",
           overflow: "hidden",
-          background: TILE_GRADS[idx % TILE_GRADS.length],
+          display: "flex",
         }}
       >
-        {hasImages ? (
-          // Side-by-side item images
-          <div style={{ position: "absolute", inset: 0, display: "flex" }}>
-            {items.slice(0, 3).map((item, i) => (
-              <div key={item.id ?? i} style={{ flex: 1, position: "relative", overflow: "hidden" }}>
-                {item.image_url ? (
-                  <img
-                    src={item.image_url}
-                    alt={item.name}
-                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                  />
-                ) : (
-                  <div style={{ position: "absolute", inset: 0, background: TILE_GRADS[(idx + i + 1) % TILE_GRADS.length] }} />
-                )}
-              </div>
-            ))}
+        {columns.map((item, i) => (
+          <div key={item.id || i} style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+            {item.image_url ? (
+              <img
+                src={item.image_url}
+                alt={item.name}
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+            ) : (
+              <div style={{ position: "absolute", inset: 0, background: "#F3F2EF", border: "1px solid #0E0E0E" }} />
+            )}
           </div>
-        ) : (
-          // Fallback: gradient with editorial divider lines
-          <>
-            <div style={{ position: "absolute", top: 0, bottom: 0, left: "53%", width: 1, background: "rgba(255,255,255,0.12)" }} />
-            <div style={{ position: "absolute", top: 0, bottom: 0, left: "28%", width: 1, background: "rgba(255,255,255,0.07)" }} />
-          </>
-        )}
+        ))}
 
         {/* worn indicator */}
         {outfit.worn && (
@@ -226,8 +210,8 @@ function Section({
             padding: "0 20px",
           }}
         >
-          {outfits.map((outfit, i) => (
-            <OutfitCard key={outfit.id} outfit={outfit} idx={i} />
+          {outfits.map((outfit) => (
+            <OutfitCard key={outfit.id} outfit={outfit} />
           ))}
         </div>
       )}
