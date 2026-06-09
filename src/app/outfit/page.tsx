@@ -301,7 +301,7 @@ export default function OutfitPage() {
                     <img
                       src={item.image_url}
                       alt={item.name}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(1) contrast(1.05)", display: "block" }}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                     />
                   ) : (
                     <div style={{ position: "absolute", top: 0, bottom: 0, left: "54%", width: 1, background: "rgba(255,255,255,0.1)" }} />
