@@ -295,13 +295,11 @@ export default function HomePage() {
       } catch { /* corrupt — fall through to re-generate */ }
     }
 
-    // Check wardrobe count before calling AI
-    supabase
-      .from("wardrobe_items")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .then(({ count }) => {
-        if ((count ?? 0) === 0) { setWardrobeEmpty(true); return; }
+    // Check wardrobe via server route (same auth path as the rest of the app)
+    fetch("/api/wardrobe")
+      .then((res) => res.json())
+      .then((items: unknown) => {
+        if (!Array.isArray(items) || items.length === 0) { setWardrobeEmpty(true); return; }
 
         setGeneratingOutfit(true);
         fetch("/api/outfit", {
