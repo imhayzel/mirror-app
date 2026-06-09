@@ -179,6 +179,13 @@ Spec before building. Never write UI code without stating: what the screen is fo
 
 ---
 
+## Styling rules (hard — no exceptions)
+
+- ✅ Typography via Tailwind classes only: `font-display`, `font-mono-label`, `italic`, `uppercase`, `tracking-*`, `text-*`, `font-*`
+- ❌ Never use inline style spreads: no `...SANS`, `...MONO`, `...SERIF`
+- ❌ Never hardcode `fontSize`, `letterSpacing`, or `textTransform` as inline styles
+- ❌ Inline styles are only acceptable for layout/spacing/color values not covered by the design system tokens (e.g. `position`, `width`, `background` with specific hex/rgba values)
+
 ## Anti-patterns (never do these)
 
 - ❌ Any brand accent hue — no blue, purple, or color accents

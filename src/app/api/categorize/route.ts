@@ -269,8 +269,10 @@ export async function POST(req: NextRequest) {
     const data = JSON.parse(match[0])
     data.type = (data.type as string).toLowerCase()
     if (!Array.isArray(data.descriptors)) data.descriptors = []
-    if (resolvedImageUrl && !useDirectUrl) data.image_url = resolvedImageUrl
+    // Always attach the image URL — include direct-URL fallback path too
+    if (resolvedImageUrl) data.image_url = resolvedImageUrl
 
+    console.log('[categorize] returning image_url:', data.image_url ?? 'none')
     await logUsage(userId, 'categorize', db)
     return NextResponse.json(data)
   } catch (err) {
