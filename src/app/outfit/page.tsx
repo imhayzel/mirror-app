@@ -3,7 +3,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 
 // ─── types ────────────────────────────────────────────────────────────────────
@@ -100,19 +99,19 @@ export default function OutfitPage() {
   const displayItems = outfit?.items?.length ? outfit.items : FALLBACK_ITEMS;
 
   const handleWearingThis = useCallback(async () => {
-    if (saving || confirmed || !userId) return;
+    if (saving || confirmed) return;
     setSaving(true);
     setError(null);
     try {
-      const { error: sbError } = await supabase
-        .from("outfit_suggestions")
-        .insert({
-          user_id: userId,
+      const res = await fetch("/api/outfit/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           items: displayItems.map((p) => p.name),
           reasoning: displayReasoning,
-          worn: true,
-        });
-      if (sbError) throw sbError;
+        }),
+      });
+      if (!res.ok) throw new Error(await res.text());
       setConfirmed(true);
       sessionStorage.removeItem("mirror_outfit");
     } catch {
@@ -120,7 +119,7 @@ export default function OutfitPage() {
     } finally {
       setSaving(false);
     }
-  }, [saving, confirmed, userId, displayItems, displayReasoning]);
+  }, [saving, confirmed, displayItems, displayReasoning]);
 
   const handleShuffle = useCallback(async () => {
     sessionStorage.removeItem("mirror_outfit");
