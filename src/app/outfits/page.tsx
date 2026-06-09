@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useAuth } from "@clerk/nextjs";
-import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 
 // ─── types ────────────────────────────────────────────────────────────────────
@@ -208,23 +206,19 @@ function Section({
 // ─── OutfitsPage ──────────────────────────────────────────────────────────────
 
 export default function OutfitsPage() {
-  const { userId } = useAuth();
   const [outfits, setOutfits] = useState<OutfitSuggestion[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId) return;
-    supabase
-      .from("outfit_suggestions")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (error) console.error("[outfits] fetch error:", error);
-        setOutfits((data as OutfitSuggestion[]) ?? []);
-        setLoading(false);
-      });
-  }, [userId]);
+    fetch("/api/outfits")
+      .then(async (res) => {
+        if (!res.ok) { console.error("[outfits] fetch error:", await res.text()); return; }
+        const data = await res.json();
+        if (Array.isArray(data)) setOutfits(data as OutfitSuggestion[]);
+      })
+      .catch((err) => console.error("[outfits] network error:", err))
+      .finally(() => setLoading(false));
+  }, []);
 
   const confirmed = outfits.filter((o) => o.worn === true);
   const suggested = outfits.filter((o) => !o.worn);

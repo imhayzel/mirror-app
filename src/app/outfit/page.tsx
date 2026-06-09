@@ -107,19 +107,25 @@ export default function OutfitPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          outfit_name: displayName,
           items: displayItems.map((p) => p.name),
           reasoning: displayReasoning,
         }),
       });
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        console.error("[WEARING THIS] confirm failed:", res.status, body)
+        throw new Error(body.error ?? "save failed")
+      }
       setConfirmed(true);
       sessionStorage.removeItem("mirror_outfit");
-    } catch {
+    } catch (err) {
+      console.error("[WEARING THIS]", err);
       setError("Couldn't save. Try again.");
     } finally {
       setSaving(false);
     }
-  }, [saving, confirmed, displayItems, displayReasoning]);
+  }, [saving, confirmed, displayName, displayItems, displayReasoning]);
 
   const handleShuffle = useCallback(async () => {
     sessionStorage.removeItem("mirror_outfit");
