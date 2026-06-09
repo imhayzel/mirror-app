@@ -732,7 +732,7 @@ export default function HomePage() {
             <div style={{ borderTop: "1px solid rgba(14,14,14,0.08)" }}>
               <ChoiceRow
                 label="Start with a piece"
-                onTap={() => router.push("/closet?mode=pick")}
+                onTap={() => router.push("/select-piece")}
               />
               <ChoiceRow
                 label="I have a vibe"

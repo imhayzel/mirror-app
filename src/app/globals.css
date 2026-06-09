@@ -67,4 +67,13 @@
   .landing-btn-white:hover {
     background: #F3F2EF;
   }
+
+  /* Hide scrollbar cross-browser */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
