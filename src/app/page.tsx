@@ -502,7 +502,7 @@ export default function HomePage() {
                     color: "rgba(255,255,255,0.92)",
                   }}
                 >
-                  {generatingOutfit ? "" : "TAP TO GENERATE TODAY'S LOOK"}
+                  {generatingOutfit ? "" : "TAP TO GENERATE TODAY’S LOOK"}
                 </span>
               </div>
             </div>
@@ -542,41 +542,6 @@ export default function HomePage() {
                     RESETS DAILY AT MIDNIGHT
                   </span>
                 </div>
-              ) : outfitError ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  <span
-                    style={{
-                      ...SERIF,
-                      fontSize: 15,
-                      fontStyle: "italic",
-                      color: "rgba(255,255,255,0.55)",
-                      display: "block",
-                      textAlign: "center",
-                      paddingTop: 4,
-                    }}
-                  >
-                    Something went wrong. Try again.
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleGenerateOutfit()}
-                    style={{
-                      ...SANS,
-                      width: "100%",
-                      height: 52,
-                      background: "rgba(255,255,255,0.15)",
-                      color: "#FFFFFF",
-                      border: "1px solid rgba(255,255,255,0.25)",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      letterSpacing: "0.22em",
-                      textTransform: "uppercase",
-                      cursor: "pointer",
-                    }}
-                  >
-                    TRY AGAIN
-                  </button>
-                </div>
               ) : (
                 <button
                   type="button"
@@ -598,7 +563,7 @@ export default function HomePage() {
                     transition: "background 0.18s cubic-bezier(0.22,1,0.36,1)",
                   }}
                 >
-                  {generatingOutfit ? "FINDING YOUR LOOK…" : "SURPRISE ME"}
+                  {outfitError ? "TRY AGAIN" : generatingOutfit ? "FINDING YOUR LOOK…" : "SURPRISE ME"}
                 </button>
               )}
             </div>
