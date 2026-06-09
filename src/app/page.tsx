@@ -230,6 +230,7 @@ export default function HomePage() {
   // outfit generation
   const [generatingOutfit, setGeneratingOutfit] = useState(false);
   const [limitReached, setLimitReached] = useState(false);
+  const [outfitError, setOutfitError] = useState(false);
 
   // sheets
   const [vibeOpen, setVibeOpen] = useState(false);
@@ -256,6 +257,7 @@ export default function HomePage() {
     if (!userId || generatingOutfit) return;
     setGeneratingOutfit(true);
     setLimitReached(false);
+    setOutfitError(false);
     try {
       const res = await fetch("/api/outfit", {
         method: "POST",
@@ -271,10 +273,16 @@ export default function HomePage() {
         router.push("/closet");
         return;
       }
+      if (!res.ok || data.error) {
+        console.error("[outfit]", data.error);
+        setOutfitError(true);
+        return;
+      }
       sessionStorage.setItem("mirror_outfit", JSON.stringify(data));
       router.push("/outfit");
-    } catch {
-      // silent
+    } catch (err) {
+      console.error("[outfit] fetch failed", err);
+      setOutfitError(true);
     } finally {
       setGeneratingOutfit(false);
     }
@@ -533,6 +541,41 @@ export default function HomePage() {
                   >
                     RESETS DAILY AT MIDNIGHT
                   </span>
+                </div>
+              ) : outfitError ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <span
+                    style={{
+                      ...SERIF,
+                      fontSize: 15,
+                      fontStyle: "italic",
+                      color: "rgba(255,255,255,0.55)",
+                      display: "block",
+                      textAlign: "center",
+                      paddingTop: 4,
+                    }}
+                  >
+                    Something went wrong. Try again.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleGenerateOutfit()}
+                    style={{
+                      ...SANS,
+                      width: "100%",
+                      height: 52,
+                      background: "rgba(255,255,255,0.15)",
+                      color: "#FFFFFF",
+                      border: "1px solid rgba(255,255,255,0.25)",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      letterSpacing: "0.22em",
+                      textTransform: "uppercase",
+                      cursor: "pointer",
+                    }}
+                  >
+                    TRY AGAIN
+                  </button>
                 </div>
               ) : (
                 <button
