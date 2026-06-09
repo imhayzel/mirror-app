@@ -439,77 +439,74 @@ export default function HomePage() {
               Today, the camel coat.
             </p>
 
-            {/* flat lay image — 4:3 ratio, tappable */}
-            <div
-              onClick={() => handleGenerateOutfit()}
-              style={{
-                aspectRatio: "4/3",
-                position: "relative",
-                overflow: "hidden",
-                cursor: generatingOutfit ? "default" : "pointer",
-                marginLeft: -24,
-                marginRight: -24,
-                width: "calc(100% + 48px)",
-              } as React.CSSProperties}
-            >
+            {/* flat lay image / skeleton */}
+            {generatingOutfit ? (
+              <div style={{ padding: "8px 0 24px" }}>
+                {/* 3 item tile skeletons */}
+                <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      style={{
+                        flex: 1,
+                        aspectRatio: "0.75",
+                        border: "1px solid #FFFFFF",
+                        background: "transparent",
+                      }}
+                    />
+                  ))}
+                </div>
+                {/* headline skeleton */}
+                <div style={{ height: 14, width: "68%", border: "1px solid #FFFFFF", background: "transparent", marginBottom: 10 }} />
+                {/* styling note skeleton */}
+                <div style={{ height: 10, width: "44%", border: "1px solid #FFFFFF", background: "transparent" }} />
+              </div>
+            ) : (
               <div
+                onClick={() => handleGenerateOutfit()}
                 style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: "linear-gradient(160deg,#3a3a38 0%,#8c8b85 48%,#c8c7c0 100%)",
-                }}
-              />
-              {/* generating overlay */}
-              {generatingOutfit && (
+                  aspectRatio: "4/3",
+                  position: "relative",
+                  overflow: "hidden",
+                  cursor: "pointer",
+                  marginLeft: -24,
+                  marginRight: -24,
+                  width: "calc(100% + 48px)",
+                } as React.CSSProperties}
+              >
                 <div
                   style={{
                     position: "absolute",
                     inset: 0,
-                    background: "rgba(14,14,14,0.55)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
+                    background: "linear-gradient(160deg,#3a3a38 0%,#8c8b85 48%,#c8c7c0 100%)",
+                  }}
+                />
+                {/* bottom strip */}
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    padding: "10px 16px",
+                    background: "linear-gradient(to top, rgba(14,14,14,0.55) 0%, transparent 100%)",
                   }}
                 >
                   <span
                     style={{
                       ...MONO,
-                      fontSize: 10,
+                      fontSize: 9.5,
                       fontWeight: 500,
-                      letterSpacing: "0.18em",
-                      color: "rgba(255,255,255,0.8)",
+                      letterSpacing: "0.12em",
                       textTransform: "uppercase",
+                      color: "rgba(255,255,255,0.92)",
                     }}
                   >
-                    FINDING YOUR LOOK…
+                    TAP TO GENERATE TODAY&apos;S LOOK
                   </span>
                 </div>
-              )}
-              {/* bottom strip */}
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  padding: "10px 16px",
-                  background: "linear-gradient(to top, rgba(14,14,14,0.55) 0%, transparent 100%)",
-                }}
-              >
-                <span
-                  style={{
-                    ...MONO,
-                    fontSize: 9.5,
-                    fontWeight: 500,
-                    letterSpacing: "0.12em",
-                    textTransform: "uppercase",
-                    color: "rgba(255,255,255,0.92)",
-                  }}
-                >
-                  {generatingOutfit ? "" : "TAP TO GENERATE TODAY’S LOOK"}
-                </span>
               </div>
-            </div>
+            )}
 
             {/* Daily limit message or CTA */}
             <div style={{ padding: "16px 0 24px" }}>
@@ -555,7 +552,7 @@ export default function HomePage() {
                     ...SANS,
                     width: "100%",
                     height: 52,
-                    background: generatingOutfit ? "rgba(255,255,255,0.6)" : "#FFFFFF",
+                    background: "#FFFFFF",
                     color: "#0E0E0E",
                     border: "none",
                     fontSize: 13,
@@ -564,10 +561,11 @@ export default function HomePage() {
                     textTransform: "uppercase",
                     cursor: generatingOutfit ? "default" : "pointer",
                     display: "block",
-                    transition: "background 0.18s cubic-bezier(0.22,1,0.36,1)",
+                    opacity: generatingOutfit ? 0.5 : 1,
+                    transition: "opacity 0.18s cubic-bezier(0.22,1,0.36,1)",
                   }}
                 >
-                  {outfitError ? "TRY AGAIN" : generatingOutfit ? "FINDING YOUR LOOK…" : "SURPRISE ME"}
+                  {outfitError ? "TRY AGAIN" : generatingOutfit ? "FINDING YOUR LOOK" : "SURPRISE ME"}
                 </button>
               )}
             </div>
