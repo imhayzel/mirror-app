@@ -45,15 +45,18 @@ const SANS: React.CSSProperties = {
 
 // ─── GarmentCard ─────────────────────────────────────────────────────────────
 // Long press (500ms) OR swipe left (≥60px) reveals delete overlay.
+// In pick mode: single tap selects the item as an outfit anchor.
 
 function GarmentCard({
   item,
   idx,
   onDelete,
+  pickMode,
 }: {
   item: WardrobeItem;
   idx: number;
   onDelete: (id: string) => void;
+  pickMode: boolean;
 }) {
   const router = useRouter();
   const [showDelete, setShowDelete] = useState(false);
@@ -62,8 +65,9 @@ function GarmentCard({
   const touchStartX = useRef<number | null>(null);
 
   const startPress = useCallback(() => {
+    if (pickMode) return;
     pressTimer.current = setTimeout(() => setShowDelete(true), 500);
-  }, []);
+  }, [pickMode]);
 
   const cancelPress = useCallback(() => {
     if (pressTimer.current) {
@@ -83,13 +87,13 @@ function GarmentCard({
   const handleTouchEnd = useCallback(
     (e: React.TouchEvent) => {
       cancelPress();
-      if (touchStartX.current !== null) {
+      if (!pickMode && touchStartX.current !== null) {
         const dx = e.changedTouches[0].clientX - touchStartX.current;
         if (dx < -60) setShowDelete(true);
         touchStartX.current = null;
       }
     },
-    [cancelPress]
+    [cancelPress, pickMode]
   );
 
   const handleDelete = useCallback(
@@ -106,6 +110,15 @@ function GarmentCard({
     setShowDelete(false);
   }, []);
 
+  const handleClick = useCallback(() => {
+    if (deleting) return;
+    if (pickMode) {
+      router.push(`/outfit?anchor=${item.id}`);
+      return;
+    }
+    if (!showDelete) router.push(`/closet/${item.id}`);
+  }, [deleting, pickMode, showDelete, item.id, router]);
+
   return (
     <div
       onMouseDown={startPress}
@@ -113,7 +126,7 @@ function GarmentCard({
       onMouseLeave={cancelPress}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      onClick={() => { if (!showDelete && !deleting) router.push(`/closet/${item.id}`); }}
+      onClick={handleClick}
       style={{
         cursor: "pointer",
         userSelect: "none",
@@ -264,9 +277,15 @@ function GarmentCard({
 
 export default function ClosetPage() {
   const { userId } = useAuth();
+  const router = useRouter();
   const [items, setItems] = useState<WardrobeItem[]>([]);
   const [filter, setFilter] = useState<FilterKey>("ALL");
   const [loading, setLoading] = useState(true);
+  const [pickMode, setPickMode] = useState(false);
+
+  useEffect(() => {
+    setPickMode(new URLSearchParams(window.location.search).get("mode") === "pick");
+  }, []);
 
   useEffect(() => {
     if (!userId) return;
@@ -425,6 +444,32 @@ export default function ClosetPage() {
             )}
           </div>
 
+          {/* pick-mode banner */}
+          {pickMode && (
+            <div
+              style={{
+                padding: "12px 20px",
+                background: "#0E0E0E",
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
+              <span
+                style={{
+                  ...MONO,
+                  fontSize: 10,
+                  letterSpacing: "0.14em",
+                  color: "rgba(255,255,255,0.7)",
+                  textTransform: "uppercase",
+                  flex: 1,
+                }}
+              >
+                Tap any piece to build an outfit around it
+              </span>
+            </div>
+          )}
+
           {/* filter pills — horizontal scroll, pill shape exempt via rounded-full */}
           <div
             style={{
@@ -540,6 +585,7 @@ export default function ClosetPage() {
                   item={item}
                   idx={idx}
                   onDelete={handleDelete}
+                  pickMode={pickMode}
                 />
               ))}
             </div>
@@ -547,33 +593,64 @@ export default function ClosetPage() {
 
         </main>
 
-        {/* Pinned add CTA — sits above bottom nav, explicit label */}
-        <Link
-          href="/add"
-          style={{
-            ...SANS,
-            position: "fixed",
-            bottom: 64,
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "100%",
-            maxWidth: 390,
-            height: 56,
-            background: "#0E0E0E",
-            color: "#FFFFFF",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 13,
-            fontWeight: 600,
-            letterSpacing: "0.22em",
-            textTransform: "uppercase",
-            textDecoration: "none",
-            zIndex: 40,
-          }}
-        >
-          ADD TO CLOSET →
-        </Link>
+        {/* Pinned CTA — add in normal mode, cancel in pick mode */}
+        {pickMode ? (
+          <button
+            type="button"
+            onClick={() => router.back()}
+            style={{
+              ...SANS,
+              position: "fixed",
+              bottom: 64,
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "100%",
+              maxWidth: 390,
+              height: 56,
+              background: "transparent",
+              color: "#0E0E0E",
+              border: "1px solid rgba(14,14,14,0.3)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 13,
+              fontWeight: 600,
+              letterSpacing: "0.22em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              zIndex: 40,
+            }}
+          >
+            CANCEL
+          </button>
+        ) : (
+          <Link
+            href="/add"
+            style={{
+              ...SANS,
+              position: "fixed",
+              bottom: 64,
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "100%",
+              maxWidth: 390,
+              height: 56,
+              background: "#0E0E0E",
+              color: "#FFFFFF",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 13,
+              fontWeight: 600,
+              letterSpacing: "0.22em",
+              textTransform: "uppercase",
+              textDecoration: "none",
+              zIndex: 40,
+            }}
+          >
+            ADD TO CLOSET →
+          </Link>
+        )}
 
         <BottomNav />
 

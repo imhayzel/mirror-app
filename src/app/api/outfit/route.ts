@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => ({}))
   const context: string | undefined = body.context
+  const anchorItemId: string | undefined = body.anchor_item_id
 
   const { data: items } = await db
     .from('wardrobe_items')
@@ -45,11 +46,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'not_enough_items' }, { status: 400 })
   }
 
-  const itemList = (items as WardrobeRow[])
+  const allItems = items as WardrobeRow[]
+  const anchorItem = anchorItemId ? allItems.find(i => i.id === anchorItemId) : undefined
+
+  const itemList = allItems
     .map(i => `- ID: ${i.id} | ${i.name} | ${i.type.toUpperCase()} | Color: ${i.color || 'unknown'}`)
     .join('\n')
 
-  const contextLine = context
+  const contextLine = anchorItem
+    ? `Build an outfit around this specific piece (it MUST be included): ID: ${anchorItem.id} | ${anchorItem.name} | ${anchorItem.type.toUpperCase()} | Color: ${anchorItem.color || 'unknown'}.`
+    : context
     ? `Context/occasion: ${context}`
     : 'Suggest a complete outfit for today.'
 

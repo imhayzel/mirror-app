@@ -60,16 +60,40 @@ export default function OutfitPage() {
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [outfit, setOutfit] = useState<OutfitData | null>(null);
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState(false);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("mirror_outfit");
-    if (stored) {
-      try {
-        setOutfit(JSON.parse(stored));
-      } catch { /* use fallback */ }
+    const anchor = new URLSearchParams(window.location.search).get("anchor");
+
+    if (anchor) {
+      // Anchor flow: generate outfit built around the selected item
+      setGenerating(true);
+      fetch("/api/outfit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ anchor_item_id: anchor }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) { setGenerateError(true); return; }
+          sessionStorage.setItem("mirror_outfit", JSON.stringify(data));
+          setOutfit(data as OutfitData);
+        })
+        .catch(() => setGenerateError(true))
+        .finally(() => setGenerating(false));
+    } else {
+      // Normal flow: read from sessionStorage
+      const stored = sessionStorage.getItem("mirror_outfit");
+      if (stored) {
+        try {
+          setOutfit(JSON.parse(stored));
+        } catch { /* use fallback */ }
+      }
     }
   }, []);
 
+  const isLoading = generating && !outfit;
   const displayName = outfit?.outfit_name || FALLBACK_NAME;
   const displayReasoning = outfit?.reasoning || FALLBACK_REASONING;
   const displayItems = outfit?.items?.length ? outfit.items : FALLBACK_ITEMS;
@@ -199,8 +223,43 @@ export default function OutfitPage() {
         {/* ── Scrollable body ── */}
         <main style={{ flex: 1, overflowY: "auto", paddingBottom: 80 }}>
 
-          {/* outfit name */}
-          <div style={{ padding: "28px 20px 0" }}>
+          {/* Anchor-flow loading state */}
+          {isLoading && (
+            <div style={{ padding: "64px 20px 0", display: "flex", flexDirection: "column", gap: 20 }}>
+              {/* skeleton name line */}
+              <div style={{ height: 44, width: "70%", border: "1px solid rgba(255,255,255,0.18)", background: "transparent" }} />
+              {/* skeleton tiles */}
+              <div style={{ display: "flex", gap: 8 }}>
+                {[0, 1, 2].map(i => (
+                  <div key={i} style={{ flex: 1, aspectRatio: "0.75", border: "1px solid rgba(255,255,255,0.18)", background: "transparent" }} />
+                ))}
+              </div>
+              <div style={{ height: 12, width: "55%", border: "1px solid rgba(255,255,255,0.18)", background: "transparent" }} />
+              <span style={{ ...MONO, fontSize: 10, letterSpacing: "0.16em", color: "rgba(255,255,255,0.3)", textTransform: "uppercase" as const }}>
+                BUILDING YOUR LOOK
+              </span>
+            </div>
+          )}
+
+          {/* Anchor-flow error state */}
+          {generateError && (
+            <div style={{ padding: "64px 20px 0", display: "flex", flexDirection: "column", gap: 16 }}>
+              <span style={{ ...SERIF, fontSize: 22, fontStyle: "italic", color: "rgba(255,255,255,0.6)" }}>
+                Couldn&apos;t build the outfit. Try again.
+              </span>
+              <button
+                type="button"
+                onClick={() => router.back()}
+                style={{ ...SANS, background: "transparent", border: "1px solid rgba(255,255,255,0.3)", color: "rgba(255,255,255,0.7)", height: 48, fontSize: 12, fontWeight: 600, letterSpacing: "0.22em", textTransform: "uppercase" as const, cursor: "pointer", width: "100%" }}
+              >
+                GO BACK
+              </button>
+            </div>
+          )}
+
+          {/* outfit content */}
+          {!isLoading && !generateError && (
+          <><div style={{ padding: "28px 20px 0" }}>
             <p
               style={{
                 ...SERIF,
@@ -355,6 +414,7 @@ export default function OutfitPage() {
 
             <div style={{ height: 20 }} />
           </div>
+          </>)}
         </main>
 
         <BottomNav dark />
