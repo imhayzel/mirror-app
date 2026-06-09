@@ -113,10 +113,7 @@ export default function SelectPiecePage() {
                   <div
                     key={item.id}
                     onClick={() => setSelectedId((prev) => (prev === item.id ? null : item.id))}
-                    className={[
-                      "cursor-pointer",
-                      selected ? "border-2 border-[#555555]" : "border-2 border-transparent",
-                    ].join(" ")}
+                    className="cursor-pointer"
                   >
                     {/* image plate */}
                     <div className="w-full aspect-[4/5] relative overflow-hidden bg-[#2c2c2a]">
@@ -128,6 +125,15 @@ export default function SelectPiecePage() {
                         />
                       )}
                     </div>
+
+                    {/* selected label */}
+                    {selected && (
+                      <div className="mt-1.5">
+                        <span className="font-mono-label text-[9px] text-[#0E0E0E] bg-[#F3F2EF] border border-[#0E0E0E] px-2 py-0.5 inline-block">
+                          SELECTED
+                        </span>
+                      </div>
+                    )}
 
                     {/* metadata */}
                     <div className="pt-[9px]">
