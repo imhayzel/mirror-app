@@ -115,7 +115,7 @@ export default function SelectPiecePage() {
                     onClick={() => setSelectedId((prev) => (prev === item.id ? null : item.id))}
                     className={[
                       "cursor-pointer",
-                      selected ? "ring-2 ring-[#0E0E0E] ring-inset" : "",
+                      selected ? "border-2 border-[#555555]" : "border-2 border-transparent",
                     ].join(" ")}
                   >
                     {/* image plate */}
@@ -126,13 +126,6 @@ export default function SelectPiecePage() {
                           alt={item.name}
                           className="absolute inset-0 w-full h-full object-cover"
                         />
-                      )}
-                      {selected && (
-                        <div className="absolute top-2 left-2">
-                          <span className="font-mono-label text-[8px] text-white bg-[#0E0E0E] px-1.5 py-0.5 block">
-                            SELECTED
-                          </span>
-                        </div>
                       )}
                     </div>
 
