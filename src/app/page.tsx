@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { supabase } from "@/lib/supabase";
@@ -12,6 +12,20 @@ type LastOutfit = {
   id: string;
   items: string[] | null;
   created_at: string;
+};
+
+type OutfitItem = {
+  id: string;
+  name: string;
+  type: string;
+  color: string | null;
+  image_url: string | null;
+};
+
+type TodaysOutfitData = {
+  outfit_name: string;
+  reasoning: string;
+  items: OutfitItem[];
 };
 
 // ─── style constants ──────────────────────────────────────────────────────────
@@ -236,6 +250,12 @@ export default function HomePage() {
   const [limitReached, setLimitReached] = useState(false);
   const [outfitError, setOutfitError] = useState(false);
 
+  // today's auto-generated outfit
+  const [outfitReady, setOutfitReady] = useState(false);
+  const [todaysOutfit, setTodaysOutfit] = useState<TodaysOutfitData | null>(null);
+  const [wardrobeEmpty, setWardrobeEmpty] = useState(false);
+  const autoStarted = useRef(false);
+
   // sheets
   const [vibeOpen, setVibeOpen] = useState(false);
   const [occasionOpen, setOccasionOpen] = useState(false);
@@ -255,6 +275,55 @@ export default function HomePage() {
       .then(({ data }) => {
         if (data && data.length > 0) setLastOutfit(data[0] as LastOutfit);
       });
+  }, [userId]);
+
+  // Auto-generate today's outfit on load
+  useEffect(() => {
+    if (!userId || autoStarted.current) return;
+    autoStarted.current = true;
+
+    const today = new Date().toISOString().split("T")[0];
+
+    // Use cached outfit from this session if it's from today
+    const stored = sessionStorage.getItem("mirror_outfit");
+    const storedDate = sessionStorage.getItem("mirror_outfit_date");
+    if (stored && storedDate === today) {
+      try {
+        setTodaysOutfit(JSON.parse(stored));
+        setOutfitReady(true);
+        return;
+      } catch { /* corrupt — fall through to re-generate */ }
+    }
+
+    // Check wardrobe count before calling AI
+    supabase
+      .from("wardrobe_items")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .then(({ count }) => {
+        if ((count ?? 0) === 0) { setWardrobeEmpty(true); return; }
+
+        setGeneratingOutfit(true);
+        fetch("/api/outfit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        })
+          .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
+          .then(({ ok, data }) => {
+            if (data.error === "not_enough_items") { setWardrobeEmpty(true); return; }
+            if (data.error === "daily_limit_reached") { setLimitReached(true); return; }
+            if (!ok || data.error) { setOutfitError(true); return; }
+            const freshToday = new Date().toISOString().split("T")[0];
+            sessionStorage.setItem("mirror_outfit", JSON.stringify(data));
+            sessionStorage.setItem("mirror_outfit_date", freshToday);
+            setTodaysOutfit(data as TodaysOutfitData);
+            setOutfitReady(true);
+          })
+          .catch(() => setOutfitError(true))
+          .finally(() => setGeneratingOutfit(false));
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const handleGenerateOutfit = useCallback(async (context?: string) => {
@@ -291,6 +360,35 @@ export default function HomePage() {
       setGeneratingOutfit(false);
     }
   }, [userId, generatingOutfit, router]);
+
+  const handleRetry = useCallback(async () => {
+    if (generatingOutfit) return;
+    setGeneratingOutfit(true);
+    setOutfitError(false);
+    try {
+      const res = await fetch("/api/outfit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (data.error === "not_enough_items") { setWardrobeEmpty(true); return; }
+      if (data.error === "daily_limit_reached") { setLimitReached(true); return; }
+      if (!res.ok || data.error) { setOutfitError(true); return; }
+      const today = new Date().toISOString().split("T")[0];
+      sessionStorage.setItem("mirror_outfit", JSON.stringify(data));
+      sessionStorage.setItem("mirror_outfit_date", today);
+      setTodaysOutfit(data as TodaysOutfitData);
+      setOutfitReady(true);
+    } catch { setOutfitError(true); }
+    finally { setGeneratingOutfit(false); }
+  }, [generatingOutfit]);
+
+  const handleCardTap = useCallback(() => {
+    if (wardrobeEmpty) { router.push("/closet"); return; }
+    if (outfitReady) { router.push("/outfit"); return; }
+    if (outfitError) { handleRetry(); return; }
+  }, [wardrobeEmpty, outfitReady, outfitError, router, handleRetry]);
 
   const handleVibeSubmit = useCallback((text: string) => {
     setVibeOpen(false);
@@ -439,10 +537,43 @@ export default function HomePage() {
               Today, the camel coat.
             </p>
 
-            {/* flat lay image / skeleton */}
-            {generatingOutfit ? (
+            {/* flat lay image / skeleton / obscured preview */}
+            {outfitReady && todaysOutfit ? (
+              // Obscured preview — item images under dark veil
+              <div
+                onClick={() => router.push("/outfit")}
+                style={{
+                  aspectRatio: "4/3",
+                  position: "relative",
+                  overflow: "hidden",
+                  cursor: "pointer",
+                  marginLeft: -24,
+                  marginRight: -24,
+                  width: "calc(100% + 48px)",
+                } as React.CSSProperties}
+              >
+                {/* Item tiles */}
+                <div style={{ position: "absolute", inset: 0, display: "flex" }}>
+                  {todaysOutfit.items.slice(0, 3).map((item, i) => (
+                    <div key={item.id} style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+                      {item.image_url ? (
+                        <img
+                          src={item.image_url}
+                          alt=""
+                          style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(1) contrast(1.05)", display: "block" }}
+                        />
+                      ) : (
+                        <div style={{ position: "absolute", inset: 0, background: `linear-gradient(${155 + i * 5}deg,#2c2c2a,#7e7d78,#cbcac4)` }} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {/* Dark overlay */}
+                <div style={{ position: "absolute", inset: 0, background: "rgba(14,14,14,0.75)" }} />
+              </div>
+            ) : generatingOutfit ? (
+              // Skeleton
               <div style={{ padding: "8px 0 24px" }}>
-                {/* 3 item tile skeletons */}
                 <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
                   {[0, 1, 2].map((i) => (
                     <div
@@ -456,19 +587,16 @@ export default function HomePage() {
                     />
                   ))}
                 </div>
-                {/* headline skeleton */}
                 <div style={{ height: 14, width: "68%", border: "1px solid #FFFFFF", background: "transparent", marginBottom: 10 }} />
-                {/* styling note skeleton */}
                 <div style={{ height: 10, width: "44%", border: "1px solid #FFFFFF", background: "transparent" }} />
               </div>
             ) : (
+              // Default — gradient placeholder
               <div
-                onClick={() => handleGenerateOutfit()}
                 style={{
                   aspectRatio: "4/3",
                   position: "relative",
                   overflow: "hidden",
-                  cursor: "pointer",
                   marginLeft: -24,
                   marginRight: -24,
                   width: "calc(100% + 48px)",
@@ -481,7 +609,6 @@ export default function HomePage() {
                     background: "linear-gradient(160deg,#3a3a38 0%,#8c8b85 48%,#c8c7c0 100%)",
                   }}
                 />
-                {/* bottom strip */}
                 <div
                   style={{
                     position: "absolute",
@@ -546,7 +673,7 @@ export default function HomePage() {
               ) : (
                 <button
                   type="button"
-                  onClick={() => handleGenerateOutfit()}
+                  onClick={handleCardTap}
                   disabled={generatingOutfit}
                   style={{
                     ...SANS,
@@ -565,7 +692,15 @@ export default function HomePage() {
                     transition: "opacity 0.18s cubic-bezier(0.22,1,0.36,1)",
                   }}
                 >
-                  {outfitError ? "TRY AGAIN" : generatingOutfit ? "FINDING YOUR LOOK" : "SURPRISE ME"}
+                  {wardrobeEmpty
+                    ? "ADD ITEMS FIRST"
+                    : outfitReady
+                    ? "SEE TODAY'S LOOK"
+                    : outfitError
+                    ? "TRY AGAIN"
+                    : generatingOutfit
+                    ? "FINDING YOUR LOOK"
+                    : "SURPRISE ME"}
                 </button>
               )}
             </div>
