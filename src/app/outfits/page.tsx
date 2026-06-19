@@ -242,7 +242,6 @@ export default function OutfitsPage() {
   }, []);
 
   const confirmed = outfits.filter((o) => o.worn === true);
-  const suggested = outfits.filter((o) => !o.worn);
 
   return (
     <div style={{ minHeight: "100vh", background: "#F3F2EF", display: "flex", justifyContent: "center" }}>
@@ -342,12 +341,6 @@ export default function OutfitsPage() {
                 outfits={confirmed}
                 emptyHeadline="Nothing confirmed yet."
                 emptySubline="Wear today's outfit to start."
-              />
-              <Section
-                kicker="SUGGESTED"
-                outfits={suggested}
-                emptyHeadline="No suggestions yet."
-                emptySubline="Get today's outfit to start."
               />
             </div>
           )}
