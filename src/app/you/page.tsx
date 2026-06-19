@@ -35,7 +35,11 @@ type StyleProfile = {
   archetype: string;
   descriptors: string[];
 };
-const SETTINGS_ROWS = ["Account", "Notifications", "About Mirror"];
+const SETTINGS_ROWS: { label: string; href: string }[] = [
+  { label: "Account",       href: "/settings" },
+  { label: "Notifications", href: "/settings" },
+  { label: "About Mirror",  href: "/settings" },
+];
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -47,11 +51,11 @@ type Stats = {
 
 // ─── SettingsRow ──────────────────────────────────────────────────────────────
 
-function SettingsRow({ label, isLast }: { label: string; isLast?: boolean }) {
+function SettingsRow({ label, href, isLast }: { label: string; href: string; isLast?: boolean }) {
   const [hovered, setHovered] = useState(false);
   return (
-    <button
-      type="button"
+    <Link
+      href={href}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -62,11 +66,10 @@ function SettingsRow({ label, isLast }: { label: string; isLast?: boolean }) {
         justifyContent: "space-between",
         padding: "0 24px",
         background: hovered ? "rgba(14,14,14,0.04)" : "transparent",
-        border: "none",
         borderBottom: isLast ? "none" : "1px solid rgba(14,14,14,0.08)",
         cursor: "pointer",
         transition: "background 0.14s cubic-bezier(0.22,1,0.36,1)",
-        textAlign: "left",
+        textDecoration: "none",
       }}
     >
       <span
@@ -92,7 +95,7 @@ function SettingsRow({ label, isLast }: { label: string; isLast?: boolean }) {
       >
         →
       </span>
-    </button>
+    </Link>
   );
 }
 
@@ -521,10 +524,11 @@ export default function YouPage() {
                 borderTop: "1px solid rgba(14,14,14,0.08)",
               }}
             >
-              {SETTINGS_ROWS.map((label, i) => (
+              {SETTINGS_ROWS.map(({ label, href }, i) => (
                 <SettingsRow
                   key={label}
                   label={label}
+                  href={href}
                   isLast={i === SETTINGS_ROWS.length - 1}
                 />
               ))}
