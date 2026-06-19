@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       max_tokens: 1000,
       messages: [{
         role: 'user',
-        content: `You are Mirror, a personal stylist with a minimal, editorial sensibility. The user has these wardrobe items:\n${itemList}\n\n${contextLine}\n\nRules:\n- Pick 3-4 items that work well together\n- Must include at least one top and one bottom (or a dress/jumpsuit as substitute)\n- Consider color harmony and the context\n- Outfit name: short, poetic, 4-5 words, no punctuation\n- Reasoning: 1-2 sentences, fashion editor voice, no exclamation marks\n\nRespond with ONLY valid JSON, no other text:\n{"outfit_name": "...", "item_ids": ["id1", "id2", "id3"], "reasoning": "..."}`
+        content: `You are Mirror, a personal stylist with a minimal, editorial sensibility. The user has these wardrobe items:\n${itemList}\n\n${contextLine}\n\nRules:\n- Pick 3-4 items that work well together\n- Must include at least one top and one bottom (or a dress/jumpsuit as substitute)\n- NEVER include two items of the same type — maximum one TOP, one BOTTOM, one OUTERWEAR, one SHOES, one ACCESSORY per outfit. If the wardrobe is limited, pick the single best item per category rather than doubling up.\n- Consider color harmony and the context\n- Outfit name: short, poetic, 4-5 words, no punctuation\n- Reasoning: 1-2 sentences, fashion editor voice, no exclamation marks\n\nRespond with ONLY valid JSON, no other text:\n{"outfit_name": "...", "item_ids": ["id1", "id2", "id3"], "reasoning": "..."}`
       }]
     })
 
