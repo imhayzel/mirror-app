@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
+import NPSModal from "@/components/NPSModal";
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -260,6 +261,9 @@ export default function HomePage() {
   const [vibeOpen, setVibeOpen] = useState(false);
   const [occasionOpen, setOccasionOpen] = useState(false);
 
+  // NPS survey
+  const [showNPS, setShowNPS] = useState(false);
+
   // last look
   const [lastOutfit, setLastOutfit] = useState<LastOutfit | null>(null);
 
@@ -274,6 +278,23 @@ export default function HomePage() {
       .limit(1)
       .then(({ data }) => {
         if (data && data.length > 0) setLastOutfit(data[0] as LastOutfit);
+      });
+  }, [userId]);
+
+  // NPS trigger — show after exactly 3 confirmed outfits, once only
+  useEffect(() => {
+    if (!userId) return;
+    if (typeof window !== 'undefined' && localStorage.getItem('mirror_nps_shown')) return;
+    supabase
+      .from('outfit_suggestions')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('worn', true)
+      .then(({ count }) => {
+        if ((count ?? 0) >= 3) {
+          setShowNPS(true);
+          localStorage.setItem('mirror_nps_shown', '1');
+        }
       });
   }, [userId]);
 
@@ -825,6 +846,9 @@ export default function HomePage() {
             onSubmit={handleOccasionSubmit}
           />
         )}
+
+        {/* ── NPS survey ── */}
+        {showNPS && <NPSModal onClose={() => setShowNPS(false)} />}
 
       </div>
     </div>
