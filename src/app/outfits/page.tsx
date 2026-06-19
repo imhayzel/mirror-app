@@ -301,6 +301,7 @@ export default function OutfitsPage() {
                 outfits={confirmed}
                 emptyHeadline="NO LOOKS YET."
                 emptySubline=""
+              />
             </div>
           )}
         </main>
