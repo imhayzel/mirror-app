@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useClerk } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
 
 const HAIRLINE = "1px solid rgba(14,14,14,0.12)";
@@ -88,6 +90,8 @@ const RowValue = ({ text }: { text: string }) => (
 );
 
 export default function SettingsPage() {
+  const { signOut } = useClerk();
+  const router = useRouter();
   const [tempUnit, setTempUnit] = useState<"C" | "F">("C");
   const [outfitReminder, setOutfitReminder] = useState(false);
   const [newFeatures, setNewFeatures] = useState(false);
@@ -238,7 +242,7 @@ export default function SettingsPage() {
       <TappableRow
         label="SIGN OUT"
         labelColor={CRITICAL}
-        onClick={() => {}}
+        onClick={() => signOut(() => router.push("/sign-in"))}
         right={<Arrow color={CRITICAL} />}
       />
       <TappableRow
