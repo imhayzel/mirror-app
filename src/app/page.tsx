@@ -419,35 +419,6 @@ export default function HomePage() {
         }}
       >
 
-        {/* ── Status bar ── */}
-        <div
-          style={{
-            height: 44,
-            padding: "0 24px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexShrink: 0,
-          }}
-        >
-          <span style={{ ...MONO, fontSize: 12, fontWeight: 500, letterSpacing: "0.08em", color: "#0E0E0E" }}>
-            9:41
-          </span>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <svg width="16" height="11" viewBox="0 0 16 11" aria-hidden="true">
-              <rect x="0" y="7" width="3" height="4" fill="#0E0E0E" />
-              <rect x="4.3" y="4.5" width="3" height="6.5" fill="#0E0E0E" />
-              <rect x="8.6" y="2" width="3" height="9" fill="#0E0E0E" />
-              <rect x="12.9" y="0" width="3" height="11" fill="#0E0E0E" />
-            </svg>
-            <svg width="25" height="12" viewBox="0 0 25 12" aria-hidden="true">
-              <rect x="0.5" y="0.5" width="21" height="11" stroke="#0E0E0E" strokeWidth="1" fill="none" />
-              <rect x="2" y="2" width="16" height="8" fill="#0E0E0E" />
-              <line x1="23" y1="4.5" x2="23" y2="7.5" stroke="#0E0E0E" strokeWidth="2" strokeLinecap="square" />
-            </svg>
-          </div>
-        </div>
-
         {/* ── Top bar ── */}
         <header
           style={{
