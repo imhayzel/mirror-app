@@ -22,7 +22,9 @@ export default function SignInPage() {
         </span>
       </div>
 
-      <SignIn />
+      <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+        <SignIn />
+      </div>
     </div>
   );
 }

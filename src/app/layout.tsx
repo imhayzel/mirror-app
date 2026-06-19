@@ -54,6 +54,8 @@ const clerkAppearance = {
     // ── Containers ──────────────────────────────────────────────
     rootBox: {
       width: "100%",
+      display: "flex",
+      justifyContent: "center",
     },
     card: {
       background: "#F3F2EF",
