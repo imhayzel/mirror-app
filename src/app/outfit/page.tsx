@@ -131,6 +131,7 @@ export default function OutfitPage() {
     setOutfit(null);
     setConfirmed(false);
     setError(null);
+    setGenerating(true);
     try {
       const res = await fetch("/api/outfit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
       const data = await res.json();
@@ -139,6 +140,7 @@ export default function OutfitPage() {
         setOutfit(data);
       }
     } catch { /* silent */ }
+    finally { setGenerating(false); }
   }, []);
 
   return (
