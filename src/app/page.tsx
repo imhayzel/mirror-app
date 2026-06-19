@@ -521,20 +521,22 @@ export default function HomePage() {
             </span>
 
             {/* headline */}
-            <p
-              style={{
-                ...SERIF,
-                fontSize: 38,
-                fontWeight: 500,
-                fontStyle: "italic",
-                lineHeight: 1.05,
-                letterSpacing: "-0.02em",
-                color: "#FFFFFF",
-                margin: "0 0 20px",
-              }}
-            >
-              Today, the camel coat.
-            </p>
+            {(outfitReady && todaysOutfit?.outfit_name) && (
+              <p
+                style={{
+                  ...SERIF,
+                  fontSize: 38,
+                  fontWeight: 500,
+                  fontStyle: "italic",
+                  lineHeight: 1.05,
+                  letterSpacing: "-0.02em",
+                  color: "#FFFFFF",
+                  margin: "0 0 20px",
+                }}
+              >
+                Today, {todaysOutfit.outfit_name}.
+              </p>
+            )}
 
             {/* flat lay image / skeleton / obscured preview */}
             {outfitReady && todaysOutfit ? (
