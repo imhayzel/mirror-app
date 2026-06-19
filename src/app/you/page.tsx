@@ -234,10 +234,8 @@ export default function YouPage() {
 
             {/* archetype headline */}
             {generatingProfile ? (
-              <p style={{ ...MONO, fontSize: 10, letterSpacing: "0.16em", color: "rgba(255,255,255,0.35)", textTransform: "uppercase", margin: "0 0 28px" }}>
-                BUILDING YOUR PROFILE…
-              </p>
-            ) : (
+              <div style={{ height: 44, width: "62%", border: "1px solid rgba(255,255,255,0.3)", background: "transparent", marginBottom: 28 }} />
+            ) : profile ? (
               <p
                 style={{
                   ...SERIF,
@@ -250,7 +248,11 @@ export default function YouPage() {
                   margin: "0 0 28px",
                 }}
               >
-                {profile ? `${profile.archetype}.` : "Add 5 items to unlock."}
+                {profile.archetype}.
+              </p>
+            ) : (
+              <p style={{ ...MONO, fontSize: 10, letterSpacing: "0.18em", color: "rgba(255,255,255,0.45)", textTransform: "uppercase", margin: "0 0 28px" }}>
+                YOUR STYLE IS EMERGING.
               </p>
             )}
 

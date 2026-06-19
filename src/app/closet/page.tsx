@@ -470,64 +470,28 @@ export default function ClosetPage() {
 
           {/* loading */}
           {loading && (
-            <div style={{ padding: "64px 24px", textAlign: "center" }}>
-              <span
-                style={{
-                  ...MONO,
-                  fontSize: 11,
-                  letterSpacing: "0.14em",
-                  color: "#8C8C86",
-                }}
-              >
-                LOADING
-              </span>
+            <div style={{ padding: "0 20px 28px", display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 14, rowGap: 24 }}>
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} style={{ width: "100%", aspectRatio: "0.8", border: "1px solid #0E0E0E", background: "transparent" }} />
+              ))}
             </div>
           )}
 
           {/* empty state */}
           {!loading && filtered.length === 0 && (
-            <div
-              style={{
-                padding: "52px 24px 0",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
-              <p
+            <div style={{ padding: "24px 20px 0" }}>
+              <span
                 style={{
-                  ...SERIF,
-                  fontSize: 22,
-                  fontWeight: 400,
-                  fontStyle: "italic",
-                  color: "#3A3A38",
-                  margin: 0,
-                  lineHeight: 1.35,
-                  textAlign: "center",
-                }}
-              >
-                Nothing here yet. Your closet is a blank page.
-              </p>
-              <Link
-                href="/add"
-                style={{
-                  ...SANS,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginTop: 32,
-                  padding: "16px 36px",
-                  background: "#0E0E0E",
-                  color: "#FFFFFF",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  letterSpacing: "0.22em",
+                  ...MONO,
+                  fontSize: 10,
+                  letterSpacing: "0.18em",
+                  color: "#ABABA4",
                   textTransform: "uppercase",
-                  textDecoration: "none",
+                  display: "block",
                 }}
               >
-                ADD TO CLOSET
-              </Link>
+                NOTHING HERE YET.
+              </span>
             </div>
           )}
 

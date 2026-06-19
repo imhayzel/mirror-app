@@ -21,16 +21,7 @@ type OutfitData = {
   items: OutfitItem[];
 };
 
-// ─── fallback placeholder ─────────────────────────────────────────────────────
-
-const FALLBACK_NAME = "The quiet confidence.";
-const FALLBACK_REASONING =
-  "A considered combination built around restraint. The ivory crew reads effortless against the charcoal weight below — clean contrast, no aggression.";
-const FALLBACK_ITEMS: OutfitItem[] = [
-  { id: "a", name: "Camel wool coat",    type: "OUTERWEAR", color: "Camel",  image_url: null },
-  { id: "b", name: "Ivory ribbed crew",  type: "KNITWEAR",  color: "Ivory",  image_url: null },
-  { id: "c", name: "Pleated wide-leg",   type: "TROUSERS",  color: "Slate",  image_url: null },
-];
+// ─── tile gradients ───────────────────────────────────────────────────────────
 
 const TILE_GRADS = [
   "linear-gradient(158deg,#3a3a38 0%,#8c8b85 50%,#c8c7c0 100%)",
@@ -103,9 +94,9 @@ export default function OutfitPage() {
   }, []);
 
   const isLoading = generating && !outfit;
-  const displayName = outfit?.outfit_name || FALLBACK_NAME;
-  const displayReasoning = outfit?.reasoning || FALLBACK_REASONING;
-  const displayItems = outfit?.items?.length ? outfit.items : FALLBACK_ITEMS;
+  const displayName = outfit?.outfit_name ?? '';
+  const displayReasoning = outfit?.reasoning ?? '';
+  const displayItems = outfit?.items ?? [];
 
   const handleWearingThis = useCallback(async () => {
     if (saving || confirmed) return;
@@ -244,7 +235,7 @@ export default function OutfitPage() {
           )}
 
           {/* outfit content */}
-          {!isLoading && !generateError && (
+          {!isLoading && !generateError && outfit && (
           <><div style={{ padding: "28px 20px 0" }}>
             <p
               style={{

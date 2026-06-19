@@ -342,8 +342,10 @@ export default function ItemDetailPage({
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "#F3F2EF", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span style={{ ...MONO, fontSize: 11, letterSpacing: "0.14em", color: "#8C8C86" }}>LOADING</span>
+      <div style={{ minHeight: "100vh", background: "#F3F2EF", display: "flex", justifyContent: "center" }}>
+        <div style={{ width: "100%", maxWidth: 390 }}>
+          <div style={{ width: "100%", aspectRatio: "3/4", border: "1px solid #0E0E0E", background: "transparent" }} />
+        </div>
       </div>
     );
   }

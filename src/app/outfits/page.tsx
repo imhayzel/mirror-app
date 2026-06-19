@@ -176,30 +176,17 @@ function Section({
 
       {outfits.length === 0 ? (
         <div style={{ padding: "4px 20px 0" }}>
-          <p
-            style={{
-              ...SERIF,
-              fontSize: 24,
-              fontWeight: 400,
-              fontStyle: "italic",
-              lineHeight: 1.2,
-              color: "#ABABA4",
-              margin: "0 0 8px",
-            }}
-          >
-            {emptyHeadline}
-          </p>
           <span
             style={{
               ...MONO,
               fontSize: 10,
-              letterSpacing: "0.12em",
-              color: "#C9C8C2",
+              letterSpacing: "0.18em",
+              color: "#ABABA4",
               textTransform: "uppercase",
               display: "block",
             }}
           >
-            {emptySubline}
+            {emptyHeadline}
           </span>
         </div>
       ) : (
@@ -302,19 +289,18 @@ export default function OutfitsPage() {
         {/* ── Scrollable body ── */}
         <main style={{ flex: 1, overflowY: "auto", paddingBottom: 80 }}>
           {loading ? (
-            <div style={{ padding: "64px 20px", display: "flex", justifyContent: "center" }}>
-              <span style={{ ...MONO, fontSize: 11, letterSpacing: "0.14em", color: "#8C8C86" }}>
-                LOADING
-              </span>
+            <div style={{ padding: "28px 20px 0", display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: 10, rowGap: 20 }}>
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} style={{ width: "100%", aspectRatio: "0.75", border: "1px solid #0E0E0E", background: "transparent" }} />
+              ))}
             </div>
           ) : (
             <div style={{ paddingTop: 28 }}>
               <Section
                 kicker=""
                 outfits={confirmed}
-                emptyHeadline="Nothing confirmed yet."
-                emptySubline="Wear today's outfit to start."
-              />
+                emptyHeadline="NO LOOKS YET."
+                emptySubline=""
             </div>
           )}
         </main>

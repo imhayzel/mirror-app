@@ -581,29 +581,6 @@ export default function HomePage() {
                     background: "linear-gradient(160deg,#3a3a38 0%,#8c8b85 48%,#c8c7c0 100%)",
                   }}
                 />
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    padding: "10px 16px",
-                    background: "linear-gradient(to top, rgba(14,14,14,0.55) 0%, transparent 100%)",
-                  }}
-                >
-                  <span
-                    style={{
-                      ...MONO,
-                      fontSize: 9.5,
-                      fontWeight: 500,
-                      letterSpacing: "0.12em",
-                      textTransform: "uppercase",
-                      color: "rgba(255,255,255,0.92)",
-                    }}
-                  >
-                    TAP TO GENERATE TODAY&apos;S LOOK
-                  </span>
-                </div>
               </div>
             )}
 

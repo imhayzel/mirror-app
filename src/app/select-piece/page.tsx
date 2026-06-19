@@ -96,14 +96,16 @@ export default function SelectPiecePage() {
         {/* ── Scrollable grid ── */}
         <main className="flex-1 overflow-y-auto pb-36 px-5 pt-2">
           {loading ? (
-            <div className="flex items-center justify-center pt-16">
-              <span className="font-mono-label text-[11px] text-[#8C8C86]">LOADING</span>
+            <div className="grid grid-cols-2 gap-x-[14px] gap-y-6">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="w-full aspect-[4/5] border border-[#0E0E0E] bg-transparent" />
+              ))}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="pt-12">
-              <p className="font-display italic text-[22px] leading-snug text-[#ABABA4] m-0">
-                Nothing in this category yet.
-              </p>
+            <div className="pt-6">
+              <span className="font-mono-label text-[10px] text-[#ABABA4] uppercase tracking-[0.18em] block">
+                NOTHING HERE YET.
+              </span>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-x-[14px] gap-y-6">
