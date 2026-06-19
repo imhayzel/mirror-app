@@ -153,24 +153,26 @@ function Section({
   return (
     <div style={{ marginBottom: 40 }}>
       {/* kicker + rule */}
-      <div style={{ padding: "0 20px", marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span
-            style={{
-              ...MONO,
-              fontSize: 9,
-              fontWeight: 500,
-              letterSpacing: "0.18em",
-              textTransform: "uppercase",
-              color: "#8C8C86",
-              flexShrink: 0,
-            }}
-          >
-            {kicker}
-          </span>
-          <div style={{ flex: 1, height: 1, background: "rgba(14,14,14,0.10)" }} />
+      {kicker && (
+        <div style={{ padding: "0 20px", marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span
+              style={{
+                ...MONO,
+                fontSize: 9,
+                fontWeight: 500,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                color: "#8C8C86",
+                flexShrink: 0,
+              }}
+            >
+              {kicker}
+            </span>
+            <div style={{ flex: 1, height: 1, background: "rgba(14,14,14,0.10)" }} />
+          </div>
         </div>
-      </div>
+      )}
 
       {outfits.length === 0 ? (
         <div style={{ padding: "4px 20px 0" }}>
@@ -337,7 +339,7 @@ export default function OutfitsPage() {
           ) : (
             <div style={{ paddingTop: 28 }}>
               <Section
-                kicker="CONFIRMED"
+                kicker=""
                 outfits={confirmed}
                 emptyHeadline="Nothing confirmed yet."
                 emptySubline="Wear today's outfit to start."
