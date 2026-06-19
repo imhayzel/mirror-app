@@ -79,6 +79,7 @@ export default function AddPage() {
 
   // submission state
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -126,6 +127,7 @@ export default function AddPage() {
     if (!file) return;
     setImagePreview(URL.createObjectURL(file));
     setImageUrl(null);
+    setUploading(true);
     setError(null);
 
     // Upload to Supabase Storage for a persistent URL
@@ -141,7 +143,8 @@ export default function AddPage() {
           console.error('[add] Storage upload failed:', data.error);
         }
       })
-      .catch(err => console.error('[add] Storage upload error:', err));
+      .catch(err => console.error('[add] Storage upload error:', err))
+      .finally(() => setUploading(false));
 
     // Categorize with base64 for AI field filling (runs in parallel)
     const reader = new FileReader();
@@ -163,6 +166,7 @@ export default function AddPage() {
   const handleClearImage = useCallback(() => {
     setImagePreview(null);
     setImageUrl(null);
+    setUploading(false);
     setUrlInput("");
     setImageMode(null);
   }, []);
@@ -196,7 +200,7 @@ export default function AddPage() {
     }
   }, [name, type, color, imageUrl, userId, router]);
 
-  const canSave = name.trim().length > 0 && type !== null && !saving && !categorizing && !!userId;
+  const canSave = name.trim().length > 0 && type !== null && !saving && !categorizing && !uploading && !!userId;
 
   return (
     <div style={{ minHeight: "100vh", background: "#0E0E0E", display: "flex", justifyContent: "center" }}>
@@ -649,7 +653,7 @@ export default function AddPage() {
                 transition: "background 0.24s cubic-bezier(0.22,1,0.36,1), color 0.24s cubic-bezier(0.22,1,0.36,1)",
               }}
             >
-              {saving ? "SAVING…" : categorizing ? "ANALYSING…" : "ADD TO CLOSET"}
+              {saving ? "SAVING…" : categorizing ? "ANALYSING…" : uploading ? "UPLOADING…" : "ADD TO CLOSET"}
             </button>
 
             <div style={{ height: 16 }} />
